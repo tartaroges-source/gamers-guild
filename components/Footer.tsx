@@ -8,9 +8,15 @@ export function Footer() {
           <Reticle className="text-guild-green h-4 w-4" />
           Gamers&apos; Guild &middot; PNC
         </p>
-        <p className="text-muted text-xs">
-          &copy; {new Date().getFullYear()} Gamers&apos; Guild. All rights reserved.
-        </p>
+
+        <div className="flex flex-col items-center gap-1 sm:items-end">
+          <p className="text-muted text-xs">
+            &copy; {new Date().getFullYear()} Gamers&apos; Guild. All rights reserved.
+          </p>
+          <p className="text-guild-green/70 font-mono text-[11px] tracking-wider">
+            {' powered by NJ Cajada'}
+          </p>
+        </div>
       </div>
     </footer>
   );

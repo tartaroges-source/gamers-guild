@@ -9,7 +9,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  
 }
 
 // --- Enums ---
@@ -33,5 +32,25 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  createdEvents Event[]
+
   @@map("users")
+}
+
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  location    String?
+  startsAt    DateTime
+  endsAt      DateTime?
+
+  createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([startsAt])
+  @@map("events")
 }

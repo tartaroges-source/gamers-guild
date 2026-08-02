@@ -1,19 +1,32 @@
-import { auth } from "@/lib/auth";
-import { logoutAction } from "@/features/auth/actions";
+import Link from 'next/link';
+import { auth } from '@/lib/auth';
+import { logoutAction } from '@/features/auth/actions';
 
 export default async function DashboardPage() {
   const session = await auth();
 
   return (
     <main className="p-8">
-      <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-      <p className="mt-2 text-gray-600">
+      <h1 className="font-display text-foreground text-2xl font-bold tracking-wide uppercase">
+        Dashboard
+      </h1>
+      <p className="text-muted mt-2">
         Signed in as {session?.user?.name} ({session?.user?.role})
       </p>
-      <form action={logoutAction} className="mt-6">
+
+      <nav className="mt-8 flex flex-col gap-2">
+        <Link
+          href="/dashboard/events"
+          className="border-guild-green/30 bg-surface text-foreground hover:border-guild-green w-fit rounded-md border px-4 py-2 text-sm font-semibold"
+        >
+          Manage Events
+        </Link>
+      </nav>
+
+      <form action={logoutAction} className="mt-8">
         <button
           type="submit"
-          className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-800 hover:bg-gray-300"
+          className="border-guild-green/30 text-muted hover:bg-surface rounded-md border px-4 py-2 text-sm"
         >
           Sign out
         </button>
