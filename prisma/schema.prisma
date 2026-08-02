@@ -1,0 +1,37 @@
+// This file defines our entire database structure.
+// Prisma reads this to generate a type-safe client, and to create/update
+// the actual tables in Postgres via migrations.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  
+}
+
+// --- Enums ---
+
+// Restricting roles to exactly these two values at the database level
+// (not just in application code) means it's impossible to ever insert
+// a User with an invalid role, no matter what code path creates one.
+enum Role {
+  ADMIN
+  OFFICER
+}
+
+// --- Models ---
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String // stored as a bcrypt hash, never plain text
+  role      Role     @default(OFFICER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
