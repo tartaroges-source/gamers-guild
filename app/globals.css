@@ -1,26 +1,32 @@
 @import 'tailwindcss';
 
+/* Design tokens, pulled from the Gamers' Guild shield logo:
+   green + gold on a dark, tactical/HUD-inspired background. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0e1310;
+  --surface: #171d19;
+  --foreground: #f2f3f0;
+  --muted: #7c877f;
+  --guild-green: #1fae59;
+  --guild-green-dim: #178644;
+  --guild-gold: #c9a227;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-muted: var(--muted);
+  --color-guild-green: var(--guild-green);
+  --color-guild-green-dim: var(--guild-green-dim);
+  --color-guild-gold: var(--guild-gold);
+  --font-display: var(--font-rajdhani);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
