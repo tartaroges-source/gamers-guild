@@ -5,6 +5,7 @@ const dashboardLinks = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/dashboard/events', label: 'Events' },
   { href: '/dashboard/announcements', label: 'Announcements' },
+  { href: '/dashboard/gallery', label: 'Gallery' },
   { href: '/dashboard/activity', label: 'Activity Log' },
 ];
 
@@ -41,3 +42,4 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </div>
   );
 }
+

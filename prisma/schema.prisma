@@ -35,8 +35,22 @@ model User {
   createdEvents        Event[]
   createdAnnouncements Announcement[]
   auditLogs            AuditLog[]
+  uploadedImages       GalleryImage[]
 
   @@map("users")
+}
+
+model GalleryImage {
+  id      String  @id @default(cuid())
+  url     String
+  caption String?
+
+  uploadedBy   User?   @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  uploadedById String?
+
+  createdAt DateTime @default(now())
+
+  @@map("gallery_images")
 }
 
 model Event {
