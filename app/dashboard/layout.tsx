@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { auth } from '@/lib/auth';
 import { logoutAction } from '@/features/auth/actions';
 
 const dashboardLinks = [
@@ -11,7 +12,14 @@ const dashboardLinks = [
   { href: '/dashboard/activity', label: 'Activity Log' },
 ];
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+  const isAdmin = session?.user?.role === 'ADMIN';
+
+  const links = isAdmin
+    ? [...dashboardLinks, { href: '/dashboard/officers', label: 'Officers' }]
+    : dashboardLinks;
+
   return (
     <div className="bg-background min-h-screen">
       <header className="border-guild-green/30 bg-background/95 sticky top-0 z-50 border-b backdrop-blur">
@@ -20,7 +28,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             className="flex flex-wrap items-center gap-x-6 gap-y-2"
             aria-label="Dashboard navigation"
           >
-            {dashboardLinks.map((link) => (
+            {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
