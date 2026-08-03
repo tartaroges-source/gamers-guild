@@ -1,18 +1,18 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@prisma/client", "pg"],
+  serverExternalPackages: ['@prisma/client', 'pg'],
   images: {
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "*.public.blob.vercel-storage.com",
+        protocol: 'https',
+        hostname: '*.public.blob.vercel-storage.com',
       },
     ],
   },
   experimental: {
     serverActions: {
-      bodySizeLimit: "10mb",
+      bodySizeLimit: '10mb',
     },
   },
 };

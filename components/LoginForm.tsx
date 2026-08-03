@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useActionState } from "react";
-import { loginAction } from "@/features/auth/actions";
+import { useActionState } from 'react';
+import { loginAction } from '@/features/auth/actions';
 
 export function LoginForm() {
   const [errorMessage, formAction, isPending] = useActionState(loginAction, undefined);
@@ -44,7 +44,7 @@ export function LoginForm() {
         disabled={isPending}
         className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
       >
-        {isPending ? "Signing in..." : "Sign in"}
+        {isPending ? 'Signing in...' : 'Sign in'}
       </button>
     </form>
   );

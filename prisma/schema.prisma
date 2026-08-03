@@ -21,6 +21,17 @@ enum Role {
   OFFICER
 }
 
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum MemberStatus {
+  ACTIVE
+  INACTIVE
+}
+
 // --- Models ---
 
 model User {
@@ -34,23 +45,11 @@ model User {
 
   createdEvents        Event[]
   createdAnnouncements Announcement[]
-  auditLogs            AuditLog[]
+  auditLogs             AuditLog[]
   uploadedImages       GalleryImage[]
+  reviewedApplications MembershipApplication[]
 
   @@map("users")
-}
-
-model GalleryImage {
-  id      String  @id @default(cuid())
-  url     String
-  caption String?
-
-  uploadedBy   User?   @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
-  uploadedById String?
-
-  createdAt DateTime @default(now())
-
-  @@map("gallery_images")
 }
 
 model Event {
@@ -72,9 +71,9 @@ model Event {
 }
 
 model Announcement {
-  id    String @id @default(cuid())
-  title String
-  body  String
+  id      String @id @default(cuid())
+  title   String
+  body    String
 
   createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
   createdById String?
@@ -102,8 +101,8 @@ model AuditLog {
   previousData Json?
   newData      Json?
 
-  performedBy   User?   @relation(fields: [performedById], references: [id], onDelete: SetNull)
-  performedById String?
+  performedBy     User?   @relation(fields: [performedById], references: [id], onDelete: SetNull)
+  performedById   String?
   // Stored separately from the relation above so the log still reads
   // correctly ("deleted by Jane Smith") even if that account is later
   // removed — the whole point of an audit trail is that it survives
@@ -116,3 +115,55 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+model GalleryImage {
+  id      String  @id @default(cuid())
+  url     String
+  caption String?
+
+  uploadedBy   User?   @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  uploadedById String?
+
+  createdAt DateTime @default(now())
+
+  @@map("gallery_images")
+}
+
+model MembershipApplication {
+  id          String @id @default(cuid())
+  fullName    String
+  email       String
+  studentId   String
+  courseYear  String
+  gamesPlayed String
+  message     String
+
+  status ApplicationStatus @default(PENDING)
+
+  reviewedBy   User?     @relation(fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedById String?
+  reviewedAt   DateTime?
+
+  member Member?
+
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@map("membership_applications")
+}
+
+// Created automatically only when an application is approved. Deliberately
+// separate from User — this is a verified-identity record for the QR
+// scan-to-confirm flow, not a login account.
+model Member {
+  id       String       @id @default(cuid())
+  fullName String
+  email    String
+  status   MemberStatus @default(ACTIVE)
+
+  application   MembershipApplication @relation(fields: [applicationId], references: [id])
+  applicationId String                @unique
+
+  joinedAt DateTime @default(now())
+
+  @@map("members")
+}

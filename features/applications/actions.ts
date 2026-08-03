@@ -1,0 +1,122 @@
+'use server';
+
+import { prisma } from '@/lib/db';
+import { auth } from '@/lib/auth';
+import { applicationFormSchema } from '@/lib/validation/application';
+import { logActivity } from '@/lib/audit';
+import { revalidatePath } from 'next/cache';
+
+export type ApplicationActionState =
+  | {
+      errors?: Record<string, string[]>;
+      message?: string;
+      success?: boolean;
+    }
+  | undefined;
+
+async function requireUser() {
+  const session = await auth();
+  if (!session?.user) {
+    return null;
+  }
+  return session.user;
+}
+
+// Public, unauthenticated — anyone can apply. No audit log entry here,
+// since logActivity requires a signed-in performer; the applicant isn't
+// a staff account, they're a visitor filling out a form.
+export async function submitApplicationAction(
+  _prevState: ApplicationActionState,
+  formData: FormData
+): Promise<ApplicationActionState> {
+  const parsed = applicationFormSchema.safeParse({
+    fullName: formData.get('fullName'),
+    email: formData.get('email'),
+    studentId: formData.get('studentId'),
+    courseYear: formData.get('courseYear'),
+    gamesPlayed: formData.get('gamesPlayed'),
+    message: formData.get('message'),
+  });
+
+  if (!parsed.success) {
+    return {
+      errors: parsed.error.flatten().fieldErrors,
+      message: 'Please fix the errors below.',
+    };
+  }
+
+  await prisma.membershipApplication.create({ data: parsed.data });
+
+  return { success: true };
+}
+
+export async function approveApplicationAction(id: string) {
+  const user = await requireUser();
+  if (!user) return;
+
+  const application = await prisma.membershipApplication.findUnique({ where: { id } });
+  // Guard against double-processing (e.g. a double-click, or two officers
+  // reviewing the same queue at once) — only act on a still-pending one.
+  if (!application || application.status !== 'PENDING') return;
+
+  // Both writes need to succeed together: an application marked APPROVED
+  // with no corresponding Member record would be a broken, confusing
+  // state. $transaction guarantees they succeed or fail as one unit.
+  await prisma.$transaction([
+    prisma.membershipApplication.update({
+      where: { id },
+      data: {
+        status: 'APPROVED',
+        reviewedById: user.id,
+        reviewedAt: new Date(),
+      },
+    }),
+    prisma.member.create({
+      data: {
+        fullName: application.fullName,
+        email: application.email,
+        applicationId: application.id,
+      },
+    }),
+  ]);
+
+  await logActivity({
+    action: 'UPDATE',
+    entityType: 'MembershipApplication',
+    entityId: id,
+    summary: `Approved application from ${application.fullName}`,
+    performedById: user.id,
+    performedByName: user.name ?? 'Unknown',
+  });
+
+  revalidatePath('/dashboard/applications');
+  revalidatePath('/dashboard/members');
+}
+
+export async function rejectApplicationAction(id: string) {
+  const user = await requireUser();
+  if (!user) return;
+
+  const application = await prisma.membershipApplication.findUnique({ where: { id } });
+  if (!application || application.status !== 'PENDING') return;
+
+  await prisma.membershipApplication.update({
+    where: { id },
+    data: {
+      status: 'REJECTED',
+      reviewedById: user.id,
+      reviewedAt: new Date(),
+    },
+  });
+
+  await logActivity({
+    action: 'UPDATE',
+    entityType: 'MembershipApplication',
+    entityId: id,
+    summary: `Rejected application from ${application.fullName}`,
+    performedById: user.id,
+    performedByName: user.name ?? 'Unknown',
+  });
+
+  revalidatePath('/dashboard/applications');
+}

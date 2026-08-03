@@ -1,10 +1,10 @@
-import { prisma } from "@/lib/db";
+import { prisma } from '@/lib/db';
 
 // Public site: only events happening now or in the future, soonest first.
 export async function getUpcomingEvents() {
   return prisma.event.findMany({
     where: { startsAt: { gte: new Date() } },
-    orderBy: { startsAt: "asc" },
+    orderBy: { startsAt: 'asc' },
   });
 }
 
@@ -12,7 +12,7 @@ export async function getUpcomingEvents() {
 // managing the calendar need to see past events too, not just what's next.
 export async function getAllEvents() {
   return prisma.event.findMany({
-    orderBy: { startsAt: "desc" },
+    orderBy: { startsAt: 'desc' },
     include: { createdBy: { select: { name: true } } },
   });
 }

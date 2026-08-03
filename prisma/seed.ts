@@ -1,14 +1,14 @@
-import { prisma } from "../lib/db";
-import bcrypt from "bcryptjs";
+import { prisma } from '../lib/db';
+import bcrypt from 'bcryptjs';
 
 async function main() {
   const email = process.env.SEED_ADMIN_EMAIL;
   const password = process.env.SEED_ADMIN_PASSWORD;
-  const name = process.env.SEED_ADMIN_NAME ?? "Admin";
+  const name = process.env.SEED_ADMIN_NAME ?? 'Admin';
 
   if (!email || !password) {
     throw new Error(
-      "Missing SEED_ADMIN_EMAIL or SEED_ADMIN_PASSWORD. Set both in .env.local before seeding."
+      'Missing SEED_ADMIN_EMAIL or SEED_ADMIN_PASSWORD. Set both in .env.local before seeding.'
     );
   }
 
@@ -28,7 +28,7 @@ async function main() {
       name,
       email,
       password: passwordHash,
-      role: "ADMIN",
+      role: 'ADMIN',
     },
   });
 

@@ -1,8 +1,8 @@
-import { prisma } from "@/lib/db";
-import type { Prisma } from "@/lib/generated/prisma";
+import { prisma } from '@/lib/db';
+import type { Prisma } from '@/lib/generated/prisma';
 
 type LogActivityInput = {
-  action: "CREATE" | "UPDATE" | "DELETE";
+  action: 'CREATE' | 'UPDATE' | 'DELETE';
   entityType: string;
   entityId: string;
   summary: string;

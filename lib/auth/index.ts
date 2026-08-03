@@ -1,8 +1,8 @@
-import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/db";
-import { authConfig } from "./config";
+import NextAuth from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
+import bcrypt from 'bcryptjs';
+import { prisma } from '@/lib/db';
+import { authConfig } from './config';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -10,12 +10,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   // database row. We don't need database-backed sessions (no "log out
   // this device remotely" requirement for a club site), so this is
   // simpler and needs no extra tables.
-  session: { strategy: "jwt" },
+  session: { strategy: 'jwt' },
   providers: [
     Credentials({
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -33,10 +33,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const passwordsMatch = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
+        const passwordsMatch = await bcrypt.compare(credentials.password as string, user.password);
 
         if (!passwordsMatch) {
           return null;
@@ -66,7 +63,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // The session callback shapes what `auth()` returns to our app code.
     async session({ session, token }) {
       if (session.user) {
-        session.user.role = token.role as "ADMIN" | "OFFICER";
+        session.user.role = token.role as 'ADMIN' | 'OFFICER';
         session.user.id = token.id as string;
       }
       return session;

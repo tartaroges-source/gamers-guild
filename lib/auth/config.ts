@@ -1,4 +1,4 @@
-import type { NextAuthConfig } from "next-auth";
+import type { NextAuthConfig } from 'next-auth';
 
 // This is the "edge-safe" half of our auth setup. It contains no database
 // calls and no bcrypt — neither can run in the Edge runtime that
@@ -6,12 +6,12 @@ import type { NextAuthConfig } from "next-auth";
 // request, is this visitor allowed to see this page?
 export const authConfig = {
   pages: {
-    signIn: "/login",
+    signIn: '/login',
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
+      const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
 
       if (isOnDashboard) {
         // Not logged in and trying to reach the CMS -> bounce to /login.
