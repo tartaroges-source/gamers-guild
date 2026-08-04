@@ -1,8 +1,8 @@
-import { prisma } from "@/lib/db";
+import { prisma } from '@/lib/db';
 
 export async function getUsers() {
   return prisma.user.findMany({
-    orderBy: [{ role: "asc" }, { name: "asc" }],
+    orderBy: [{ role: 'asc' }, { name: 'asc' }],
   });
 }
 

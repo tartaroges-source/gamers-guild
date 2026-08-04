@@ -27,7 +27,10 @@ export function MemberQrCard({ fullName, qrDataUrl, fileName }: MemberQrCardProp
         />
       </button>
 
-      <dialog ref={dialogRef} className="border-guild-green/30 bg-surface backdrop:bg-black/70 rounded-lg border p-6">
+      <dialog
+        ref={dialogRef}
+        className="border-guild-green/30 bg-surface rounded-lg border p-6 backdrop:bg-black/70"
+      >
         <div className="flex flex-col items-center gap-4">
           <p className="font-display text-foreground text-sm font-bold tracking-wide uppercase">
             {fullName}
@@ -39,7 +42,11 @@ export function MemberQrCard({ fullName, qrDataUrl, fileName }: MemberQrCardProp
             className="h-64 w-64 rounded bg-white p-2"
           />
           <div className="flex gap-3">
-            <a href={qrDataUrl} download={fileName} className="bg-guild-green font-display text-background hover:bg-guild-green-dim rounded-md px-4 py-2 text-xs font-bold tracking-wide uppercase">
+            <a
+              href={qrDataUrl}
+              download={fileName}
+              className="bg-guild-green font-display text-background hover:bg-guild-green-dim rounded-md px-4 py-2 text-xs font-bold tracking-wide uppercase"
+            >
               Download
             </a>
             <button

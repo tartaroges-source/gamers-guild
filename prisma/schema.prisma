@@ -167,3 +167,19 @@ model Member {
 
   @@map("members")
 }
+
+// A deliberate singleton: every row we ever create defaults to the same
+// id, so there's always exactly one settings record. Queries always look
+// up id: "singleton" (see getSiteSettings), never anything else.
+model SiteSettings {
+  id           String @id @default("singleton")
+  clubName     String @default("Gamers' Guild")
+  contactEmail String?
+  discordUrl   String?
+  facebookUrl  String?
+  instagramUrl String?
+
+  updatedAt DateTime @updatedAt
+
+  @@map("site_settings")
+}

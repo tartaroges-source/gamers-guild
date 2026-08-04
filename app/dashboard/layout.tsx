@@ -17,7 +17,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const isAdmin = session?.user?.role === 'ADMIN';
 
   const links = isAdmin
-    ? [...dashboardLinks, { href: '/dashboard/officers', label: 'Officers' }]
+    ? [
+        ...dashboardLinks,
+        { href: '/dashboard/officers', label: 'Officers' },
+        { href: '/dashboard/settings', label: 'Settings' },
+      ]
     : dashboardLinks;
 
   return (
