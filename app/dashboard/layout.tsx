@@ -21,6 +21,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         ...dashboardLinks,
         { href: '/dashboard/officers', label: 'Officers' },
         { href: '/dashboard/settings', label: 'Settings' },
+        { href: '/dashboard/team', label: 'Team' },
       ]
     : dashboardLinks;
 

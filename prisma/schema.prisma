@@ -48,6 +48,8 @@ model User {
   auditLogs             AuditLog[]
   uploadedImages       GalleryImage[]
   reviewedApplications MembershipApplication[]
+  createdTeamMembers   TeamMember[]
+  createdAlbums        Album[]
 
   @@map("users")
 }
@@ -115,10 +117,41 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+// Every image now belongs to exactly one album — Gallery is album-based,
+// not a flat list, per the redesign.
+model Album {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  eventDate   DateTime?
+  isFeatured  Boolean   @default(false)
+
+  images GalleryImage[] @relation("AlbumImages")
+
+  // Points at one of this album's own images. onDelete: SetNull means if
+  // that specific image is later deleted, the album just loses its cover
+  // (not an error) — it doesn't block deleting the image.
+  coverImage   GalleryImage? @relation("AlbumCover", fields: [coverImageId], references: [id], onDelete: SetNull)
+  coverImageId String?       @unique
+
+  createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("albums")
+}
+
 model GalleryImage {
   id      String  @id @default(cuid())
   url     String
   caption String?
+
+  album   Album  @relation("AlbumImages", fields: [albumId], references: [id], onDelete: Cascade)
+  albumId String
+
+  coverOfAlbum Album? @relation("AlbumCover")
 
   uploadedBy   User?   @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
   uploadedById String?
@@ -182,4 +215,26 @@ model SiteSettings {
   updatedAt DateTime @updatedAt
 
   @@map("site_settings")
+}
+
+// Public "About Us" roster — officers and committee members. Deliberately
+// separate from User: not everyone featured here has (or needs) a login
+// account, and this content should stay editable by any Admin/Officer,
+// not just whoever originally created a given entry.
+model TeamMember {
+  id        String  @id @default(cuid())
+  name      String
+  position  String // e.g. "President", "Events Committee Head"
+  committee String? // optional grouping, e.g. "Executive Board"
+  photoUrl  String?
+  bio       String?
+  order     Int     @default(0) // controls display order on the public page
+
+  createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("team_members")
 }
