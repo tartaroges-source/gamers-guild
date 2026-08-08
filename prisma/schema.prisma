@@ -212,6 +212,18 @@ model SiteSettings {
   facebookUrl  String?
   instagramUrl String?
 
+  // About page content — editable by Admin, powers the /about hero and
+  // content sections. coreValues/gamingCommunities are stored as
+  // newline-separated lists and split apart when rendered.
+  aboutHeroImageUrl String?
+  aboutIntro        String?
+  mission           String?
+  vision            String?
+  coreValues        String?
+  whatWeDo          String?
+  whyJoinUs         String?
+  gamingCommunities String?
+
   updatedAt DateTime @updatedAt
 
   @@map("site_settings")
@@ -237,4 +249,38 @@ model TeamMember {
   updatedAt DateTime @updatedAt
 
   @@map("team_members")
+}
+
+// Singleton, same pattern as SiteSettings — the editable text blocks for
+// the public About page (hero image/tagline plus each section's copy).
+model AboutContent {
+  id                String  @id @default("singleton")
+  heroImageUrl      String?
+  heroTagline       String?
+  whoWeAre          String?
+  mission           String?
+  vision            String?
+  whatWeDo          String?
+  gamingCommunities String?
+  whyJoin           String?
+
+  updatedAt DateTime @updatedAt
+
+  @@map("about_content")
+}
+
+// A short list of title+description pairs rendered as cards on the About
+// page. Kept as its own table (not JSON on AboutContent) so it's a real,
+// orderable, individually-editable list — consistent with how every
+// other "manage a list of things" feature in this app works.
+model CoreValue {
+  id          String @id @default(cuid())
+  title       String
+  description String
+  order       Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("core_values")
 }

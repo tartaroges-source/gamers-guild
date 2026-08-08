@@ -7,6 +7,8 @@ const dashboardLinks = [
   { href: '/dashboard/events', label: 'Events' },
   { href: '/dashboard/announcements', label: 'Announcements' },
   { href: '/dashboard/gallery', label: 'Gallery' },
+  { href: '/dashboard/team', label: 'Team' },
+  { href: '/dashboard/about', label: 'About Page' },
   { href: '/dashboard/applications', label: 'Applications' },
   { href: '/dashboard/members', label: 'Members' },
   { href: '/dashboard/activity', label: 'Activity Log' },
@@ -21,7 +23,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
         ...dashboardLinks,
         { href: '/dashboard/officers', label: 'Officers' },
         { href: '/dashboard/settings', label: 'Settings' },
-        { href: '/dashboard/team', label: 'Team' },
       ]
     : dashboardLinks;
 
