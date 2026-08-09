@@ -32,6 +32,11 @@ enum MemberStatus {
   INACTIVE
 }
 
+enum HeroMediaType {
+  IMAGE
+  VIDEO
+}
+
 // --- Models ---
 
 model User {
@@ -283,4 +288,20 @@ model CoreValue {
   updatedAt DateTime @updatedAt
 
   @@map("core_values")
+}
+
+// Singleton, same pattern as SiteSettings/AboutContent. Only one of
+// heroImageUrl/heroVideoUrl is actually shown at a time, controlled by
+// heroMediaType — both fields are kept even when unused, so switching
+// back doesn't lose the previously-uploaded file.
+model HomepageContent {
+  id            String        @id @default("singleton")
+  heroMediaType HeroMediaType @default(IMAGE)
+  heroImageUrl  String?
+  heroVideoUrl  String?
+  heroTagline   String?
+
+  updatedAt DateTime @updatedAt
+
+  @@map("homepage_content")
 }

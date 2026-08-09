@@ -4,6 +4,7 @@ import { logoutAction } from '@/features/auth/actions';
 
 const dashboardLinks = [
   { href: '/dashboard', label: 'Dashboard' },
+  { href: '/dashboard/homepage', label: 'Homepage' },
   { href: '/dashboard/events', label: 'Events' },
   { href: '/dashboard/announcements', label: 'Announcements' },
   { href: '/dashboard/gallery', label: 'Gallery' },

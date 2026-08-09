@@ -1,78 +1,208 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Reticle } from '@/components/Reticle';
+import { getSiteSettings } from '@/features/settings/queries';
+import { getHomepageContent } from '@/features/homepage/queries';
+import { getUpcomingEvents } from '@/features/events/queries';
+import { getAnnouncements } from '@/features/announcements/queries';
+import { getTeamMembers } from '@/features/team/queries';
+import { getFeaturedAlbum } from '@/features/albums/queries';
+import { formatEventDate } from '@/lib/format';
 
-const pillars = [
-  {
-    title: 'Competitive Teams',
-    body: 'Organized rosters that train, scrim, and represent PNC at inter-school tournaments across multiple titles.',
-  },
-  {
-    title: 'Casual Game Nights',
-    body: 'Weekly drop-in sessions — no roster, no pressure. Bring a controller, or just come watch and hang out.',
-  },
-  {
-    title: 'Community Events',
-    body: 'LAN parties, watch parties for major tournaments, and socials that bring the whole guild together off-screen too.',
-  },
-];
+export default async function HomePage() {
+  const [settings, hero, events, announcements, teamMembers, featuredAlbum] = await Promise.all([
+    getSiteSettings(),
+    getHomepageContent(),
+    getUpcomingEvents(),
+    getAnnouncements(),
+    getTeamMembers(),
+    getFeaturedAlbum(),
+  ]);
 
-export default function HomePage() {
+  const featuredEvent = events[0];
+  const latestNews = announcements.slice(0, 2);
+  const officerHighlights = teamMembers.filter((m) => !m.committee).slice(0, 3);
+
   return (
     <>
       {/* Hero */}
-      <section className="border-guild-green/20 relative overflow-hidden border-b">
-        {/* Large, faint reticle motif in the background — restrained nod to the
-            crosshair in our logo, not a literal illustration. */}
-        <Reticle className="text-guild-green/[0.06] pointer-events-none absolute top-1/2 right-[-120px] h-[520px] w-[520px] -translate-y-1/2" />
+      <section className="border-guild-green/20 relative flex min-h-[85vh] items-center overflow-hidden border-b">
+        {hero.heroMediaType === 'VIDEO' && hero.heroVideoUrl ? (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 h-full w-full object-cover"
+            src={hero.heroVideoUrl}
+          />
+        ) : hero.heroImageUrl ? (
+          <Image src={hero.heroImageUrl} alt="" fill priority className="object-cover" />
+        ) : (
+          <Reticle className="text-guild-green/[0.06] pointer-events-none absolute top-1/2 right-[-120px] h-[520px] w-[520px] -translate-y-1/2" />
+        )}
+        <div className="from-background via-background/80 to-background/40 absolute inset-0 bg-gradient-to-t" />
 
         <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
           <p className="text-guild-gold font-mono text-sm tracking-widest uppercase">
-            PNC &middot; Est. Gamers&apos; Guild
+            {settings.clubName} &middot; Est. PNC
           </p>
           <h1 className="font-display text-foreground mt-4 max-w-2xl text-5xl font-bold tracking-tight uppercase sm:text-6xl">
             Play with purpose.
           </h1>
-          <p className="text-muted mt-6 max-w-xl text-lg">
-            The official home of PNC&apos;s competitive and casual gaming community — teams, events,
-            and a guild that has your back.
-          </p>
+          {hero.heroTagline && (
+            <p className="text-muted mt-6 max-w-xl text-lg">{hero.heroTagline}</p>
+          )}
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
-              href="/events"
+              href="/apply"
               className="bg-guild-green font-display text-background hover:bg-guild-green-dim rounded-md px-6 py-3 text-sm font-bold tracking-wide uppercase transition-colors"
             >
-              View Events
+              Join Now
             </Link>
             <Link
-              href="/apply"
+              href="/events"
               className="border-guild-gold/60 font-display text-guild-gold hover:bg-guild-gold/10 rounded-md border px-6 py-3 text-sm font-bold tracking-wide uppercase transition-colors"
             >
-              Join the Guild
+              View Events
             </Link>
           </div>
         </div>
       </section>
 
-      {/* What we do */}
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <h2 className="font-display text-foreground text-2xl font-bold tracking-wide uppercase">
-          What we do
-        </h2>
-        <div className="mt-8 grid gap-6 sm:grid-cols-3">
-          {pillars.map((pillar) => (
-            <div
-              key={pillar.title}
-              className="border-guild-green/20 bg-surface rounded-lg border p-6"
+      {/* Featured Event */}
+      {featuredEvent && (
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <h2 className="font-display text-foreground text-2xl font-bold tracking-wide uppercase">
+            Featured Event
+          </h2>
+          <div className="border-guild-green/20 bg-surface mt-6 rounded-lg border p-6">
+            <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
+              {formatEventDate(featuredEvent.startsAt)}
+            </p>
+            <h3 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
+              {featuredEvent.title}
+            </h3>
+            {featuredEvent.location && (
+              <p className="text-muted mt-1 text-sm">{featuredEvent.location}</p>
+            )}
+            <p className="text-muted mt-3 text-sm">{featuredEvent.description}</p>
+            <Link
+              href="/events"
+              className="font-display text-guild-green mt-4 inline-block text-sm font-bold tracking-wide uppercase hover:underline"
             >
-              <Reticle className="text-guild-green h-5 w-5" />
-              <h3 className="font-display text-foreground mt-4 text-lg font-bold tracking-wide uppercase">
-                {pillar.title}
-              </h3>
-              <p className="text-muted mt-2 text-sm">{pillar.body}</p>
+              View All Events &rarr;
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* Latest News */}
+      {latestNews.length > 0 && (
+        <section className="border-guild-green/20 bg-surface border-t">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+            <h2 className="font-display text-foreground text-2xl font-bold tracking-wide uppercase">
+              Latest News
+            </h2>
+            <div className="mt-6 grid gap-6 sm:grid-cols-2">
+              {latestNews.map((item) => (
+                <div
+                  key={item.id}
+                  className="border-guild-green/20 bg-background rounded-lg border p-6"
+                >
+                  <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
+                    {formatEventDate(item.createdAt)}
+                  </p>
+                  <h3 className="font-display text-foreground mt-2 text-lg font-bold tracking-wide uppercase">
+                    {item.title}
+                  </h3>
+                  <p className="text-muted mt-2 line-clamp-3 text-sm">{item.body}</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
+            <Link
+              href="/announcements"
+              className="font-display text-guild-green mt-6 inline-block text-sm font-bold tracking-wide uppercase hover:underline"
+            >
+              View All Announcements &rarr;
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* Officer Highlights */}
+      {officerHighlights.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <h2 className="font-display text-foreground text-2xl font-bold tracking-wide uppercase">
+            Officer Highlights
+          </h2>
+          <div className="mt-6 grid gap-6 sm:grid-cols-3">
+            {officerHighlights.map((member) => (
+              <div
+                key={member.id}
+                className="border-guild-green/20 bg-surface rounded-lg border p-6 text-center"
+              >
+                {member.photoUrl ? (
+                  <Image
+                    src={member.photoUrl}
+                    alt={member.name}
+                    width={90}
+                    height={90}
+                    className="mx-auto h-[90px] w-[90px] rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="bg-background font-display text-guild-green mx-auto flex h-[90px] w-[90px] items-center justify-center rounded-full text-xl font-bold">
+                    {member.name.charAt(0)}
+                  </div>
+                )}
+                <p className="font-display text-foreground mt-3 font-bold uppercase">
+                  {member.name}
+                </p>
+                <p className="text-guild-green mt-1 text-sm">{member.position}</p>
+              </div>
+            ))}
+          </div>
+          <Link
+            href="/about"
+            className="font-display text-guild-green mt-6 inline-block text-sm font-bold tracking-wide uppercase hover:underline"
+          >
+            Meet the Full Team &rarr;
+          </Link>
+        </section>
+      )}
+
+      {/* Gallery Preview */}
+      {featuredAlbum && featuredAlbum.coverImage && (
+        <section className="border-guild-green/20 bg-surface border-t">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+            <h2 className="font-display text-foreground text-2xl font-bold tracking-wide uppercase">
+              Gallery Preview
+            </h2>
+            <Link
+              href={`/gallery/${featuredAlbum.id}`}
+              className="border-guild-green/20 mt-6 block overflow-hidden rounded-lg border"
+            >
+              <div className="relative h-64 w-full sm:h-80">
+                <Image
+                  src={featuredAlbum.coverImage.url}
+                  alt={featuredAlbum.title}
+                  fill
+                  className="object-cover transition-transform hover:scale-105"
+                />
+              </div>
+            </Link>
+            <p className="font-display text-foreground mt-4 text-lg font-bold tracking-wide uppercase">
+              {featuredAlbum.title}
+            </p>
+            <Link
+              href="/gallery"
+              className="font-display text-guild-green mt-2 inline-block text-sm font-bold tracking-wide uppercase hover:underline"
+            >
+              View Full Gallery &rarr;
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* Closing CTA */}
       <section className="border-guild-green/20 bg-surface border-t">
