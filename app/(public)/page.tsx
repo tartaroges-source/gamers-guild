@@ -3,23 +3,23 @@ import Image from 'next/image';
 import { Reticle } from '@/components/Reticle';
 import { getSiteSettings } from '@/features/settings/queries';
 import { getHomepageContent } from '@/features/homepage/queries';
-import { getUpcomingEvents } from '@/features/events/queries';
+import { getFeaturedEventForHomepage } from '@/features/events/queries';
 import { getAnnouncements } from '@/features/announcements/queries';
 import { getTeamMembers } from '@/features/team/queries';
 import { getFeaturedAlbum } from '@/features/albums/queries';
 import { formatEventDate } from '@/lib/format';
 
 export default async function HomePage() {
-  const [settings, hero, events, announcements, teamMembers, featuredAlbum] = await Promise.all([
-    getSiteSettings(),
-    getHomepageContent(),
-    getUpcomingEvents(),
-    getAnnouncements(),
-    getTeamMembers(),
-    getFeaturedAlbum(),
-  ]);
+  const [settings, hero, featuredEvent, announcements, teamMembers, featuredAlbum] =
+    await Promise.all([
+      getSiteSettings(),
+      getHomepageContent(),
+      getFeaturedEventForHomepage(),
+      getAnnouncements(),
+      getTeamMembers(),
+      getFeaturedAlbum(),
+    ]);
 
-  const featuredEvent = events[0];
   const latestNews = announcements.slice(0, 2);
   const officerHighlights = teamMembers.filter((m) => !m.committee).slice(0, 3);
 
@@ -76,23 +76,34 @@ export default async function HomePage() {
           <h2 className="font-display text-foreground text-2xl font-bold tracking-wide uppercase">
             Featured Event
           </h2>
-          <div className="border-guild-green/20 bg-surface mt-6 rounded-lg border p-6">
-            <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
-              {formatEventDate(featuredEvent.startsAt)}
-            </p>
-            <h3 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
-              {featuredEvent.title}
-            </h3>
-            {featuredEvent.location && (
-              <p className="text-muted mt-1 text-sm">{featuredEvent.location}</p>
+          <div className="border-guild-green/20 bg-surface mt-6 overflow-hidden rounded-lg border sm:flex">
+            {featuredEvent.media[0] && (
+              <div className="relative h-48 w-full flex-shrink-0 sm:h-auto sm:w-64">
+                {featuredEvent.media[0].type === 'VIDEO' ? (
+                  <video src={featuredEvent.media[0].url} className="h-full w-full object-cover" />
+                ) : (
+                 <Image src={featuredEvent.media[0].url} alt="" fill sizes="256px" className="object-cover" />
+                )}
+              </div>
             )}
-            <p className="text-muted mt-3 text-sm">{featuredEvent.description}</p>
-            <Link
-              href="/events"
-              className="font-display text-guild-green mt-4 inline-block text-sm font-bold tracking-wide uppercase hover:underline"
-            >
-              View All Events &rarr;
-            </Link>
+            <div className="p-6">
+              <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
+                {formatEventDate(featuredEvent.startsAt)}
+              </p>
+              <h3 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
+                {featuredEvent.title}
+              </h3>
+              {featuredEvent.location && (
+                <p className="text-muted mt-1 text-sm">{featuredEvent.location}</p>
+              )}
+              <p className="text-muted mt-3 text-sm">{featuredEvent.description}</p>
+              <Link
+                href={`/events/${featuredEvent.id}`}
+                className="font-display text-guild-green mt-4 inline-block text-sm font-bold tracking-wide uppercase hover:underline"
+              >
+                View Event &rarr;
+              </Link>
+            </div>
           </div>
         </section>
       )}

@@ -37,6 +37,11 @@ enum HeroMediaType {
   VIDEO
 }
 
+enum EventMediaType {
+  IMAGE
+  VIDEO
+}
+
 // --- Models ---
 
 model User {
@@ -66,15 +71,35 @@ model Event {
   location    String?
   startsAt    DateTime
   endsAt      DateTime?
+  isFeatured  Boolean   @default(false)
 
   createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
   createdById String?
+
+  media EventMedia[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([startsAt])
   @@map("events")
+}
+
+// Promotional images/videos attached to an event. Cascade-deletes with
+// the event — an event's media has no meaning once the event is gone.
+model EventMedia {
+  id    String         @id @default(cuid())
+  url   String
+  type  EventMediaType
+  order Int            @default(0)
+
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId String
+
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
+  @@map("event_media")
 }
 
 model Announcement {

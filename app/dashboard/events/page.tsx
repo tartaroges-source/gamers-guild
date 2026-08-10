@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getAllEvents } from '@/features/events/queries';
 import { formatEventDate } from '@/lib/format';
 import { deleteEventAction } from '@/features/events/actions';
+import { setFeaturedEventAction } from '@/features/events/media';
 
 export default async function DashboardEventsPage() {
   const events = await getAllEvents();
@@ -32,6 +33,11 @@ export default async function DashboardEventsPage() {
               <div>
                 <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
                   {formatEventDate(event.startsAt)}
+                  {event.isFeatured && (
+                    <span className="bg-guild-gold/20 text-guild-gold ml-2 rounded px-1.5 py-0.5">
+                      FEATURED
+                    </span>
+                  )}
                 </p>
                 <p className="font-display text-foreground mt-1 font-bold uppercase">
                   {event.title}
@@ -40,7 +46,23 @@ export default async function DashboardEventsPage() {
                   Created by {event.createdBy?.name ?? 'Unknown'}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+                {!event.isFeatured && (
+                  <form action={setFeaturedEventAction.bind(null, event.id)}>
+                    <button
+                      type="submit"
+                      className="border-guild-gold/40 text-guild-gold hover:bg-guild-gold/10 rounded-md border px-3 py-1.5 text-sm"
+                    >
+                      Set Featured
+                    </button>
+                  </form>
+                )}
+                <Link
+                  href={`/dashboard/events/${event.id}/media`}
+                  className="border-guild-green/40 text-guild-green hover:bg-guild-green/10 rounded-md border px-3 py-1.5 text-sm"
+                >
+                  Media
+                </Link>
                 <Link
                   href={`/dashboard/events/${event.id}/edit`}
                   className="border-guild-green/40 text-guild-green hover:bg-guild-green/10 rounded-md border px-3 py-1.5 text-sm"
