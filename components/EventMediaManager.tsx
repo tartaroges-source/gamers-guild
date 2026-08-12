@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useActionState } from 'react';
 import {
   uploadEventMediaAction,
@@ -32,8 +33,15 @@ export function EventMediaManager({ eventId, media }: EventMediaManagerProps) {
               {item.type === 'VIDEO' ? (
                 <video src={item.url} controls className="aspect-video w-full object-cover" />
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element -- external Blob URL, plain preview
-                <img src={item.url} alt="" className="aspect-video w-full object-cover" />
+                <div className="relative aspect-video w-full">
+                  <Image
+                    src={item.url}
+                    alt=""
+                    fill
+                    sizes="(max-width: 640px) 100vw, 33vw"
+                    className="object-cover"
+                  />
+                </div>
               )}
               <div className="flex items-center justify-between gap-2 p-2">
                 <div className="flex gap-1">
