@@ -37,7 +37,7 @@ export default async function HomePage() {
             src={hero.heroVideoUrl}
           />
         ) : hero.heroImageUrl ? (
-          <Image src={hero.heroImageUrl} alt="" fill priority className="object-cover" />
+          <Image src={hero.heroImageUrl} alt="" fill priority sizes="100vw" className="object-cover" />
         ) : (
           <Reticle className="text-guild-green/[0.06] pointer-events-none absolute top-1/2 right-[-120px] h-[520px] w-[520px] -translate-y-1/2" />
         )}
@@ -195,11 +195,12 @@ export default async function HomePage() {
             >
               <div className="relative h-64 w-full sm:h-80">
                 <Image
-                  src={featuredAlbum.coverImage.url}
-                  alt={featuredAlbum.title}
-                  fill
-                  className="object-cover transition-transform hover:scale-105"
-                />
+  src={featuredAlbum.coverImage.url}
+  alt={featuredAlbum.title}
+  fill
+  sizes="(max-width: 640px) 100vw, 1024px"
+  className="object-cover transition-transform hover:scale-105"
+/>
               </div>
             </Link>
             <p className="font-display text-foreground mt-4 text-lg font-bold tracking-wide uppercase">

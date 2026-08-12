@@ -199,6 +199,7 @@ model MembershipApplication {
   courseYear  String
   gamesPlayed String
   message     String
+  idPictureUrl String?
 
   status ApplicationStatus @default(PENDING)
 

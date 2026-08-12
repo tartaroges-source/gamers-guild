@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react';
 import { submitApplicationAction } from '@/features/applications/actions';
+import { IdPictureUpload } from '@/components/IdPictureUpload';
 
 const inputClasses =
   'mt-1 w-full rounded-md border border-guild-green/30 bg-background px-3 py-2 text-foreground focus:border-guild-green focus:ring-1 focus:ring-guild-green focus:outline-none';
@@ -80,6 +81,10 @@ export function ApplicationForm() {
         {state?.errors?.gamesPlayed && (
           <p className="mt-1 text-sm text-red-400">{state.errors.gamesPlayed[0]}</p>
         )}
+      </div>
+
+      <div>
+        <IdPictureUpload />
       </div>
 
       <div>

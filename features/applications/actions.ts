@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { applicationFormSchema } from '@/lib/validation/application';
 import { logActivity } from '@/lib/audit';
+import { validateAndUploadImage } from '@/lib/blob';
 import { revalidatePath } from 'next/cache';
 
 export type ApplicationActionState =
@@ -45,7 +46,19 @@ export async function submitApplicationAction(
     };
   }
 
-  await prisma.membershipApplication.create({ data: parsed.data });
+  const idPictureFile = formData.get('idPicture');
+  if (!(idPictureFile instanceof File) || idPictureFile.size === 0) {
+    return { message: 'Please upload and crop your 2x2 ID picture.' };
+  }
+
+  const uploadResult = await validateAndUploadImage(idPictureFile, 'id-pictures');
+  if ('error' in uploadResult) {
+    return { message: uploadResult.error };
+  }
+
+  await prisma.membershipApplication.create({
+    data: { ...parsed.data, idPictureUrl: uploadResult.url },
+  });
 
   return { success: true };
 }

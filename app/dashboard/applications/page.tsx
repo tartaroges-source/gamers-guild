@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { getApplicationsForDashboard } from '@/features/applications/queries';
 import { approveApplicationAction, rejectApplicationAction } from '@/features/applications/actions';
 import { formatEventDate } from '@/lib/format';
@@ -28,31 +29,42 @@ export default async function DashboardApplicationsPage() {
               className="border-guild-green/20 bg-surface rounded-lg border p-4"
             >
               <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
-                <div>
-                  <p className="font-display text-foreground font-bold uppercase">
-                    {application.fullName}{' '}
-                    <span
-                      className={`font-mono text-xs tracking-widest uppercase ${statusStyles[application.status]}`}
-                    >
-                      {application.status}
-                    </span>
-                  </p>
-                  <p className="text-muted mt-1 text-sm">
-                    {application.email} &middot; {application.studentId} &middot;{' '}
-                    {application.courseYear}
-                  </p>
-                  <p className="text-foreground mt-2 text-sm">
-                    <span className="text-muted">Plays:</span> {application.gamesPlayed}
-                  </p>
-                  <p className="text-muted mt-1 text-sm whitespace-pre-line">
-                    {application.message}
-                  </p>
-                  <p className="text-muted mt-2 text-xs">
-                    Submitted {formatEventDate(application.createdAt)}
-                    {application.reviewedBy && (
-                      <> &middot; Reviewed by {application.reviewedBy.name}</>
-                    )}
-                  </p>
+                <div className="flex gap-4">
+                  {application.idPictureUrl && (
+                    <Image
+                      src={application.idPictureUrl}
+                      alt={`ID picture for ${application.fullName}`}
+                      width={64}
+                      height={64}
+                      className="h-16 w-16 flex-shrink-0 rounded-md object-cover"
+                    />
+                  )}
+                  <div>
+                    <p className="font-display text-foreground font-bold uppercase">
+                      {application.fullName}{' '}
+                      <span
+                        className={`font-mono text-xs tracking-widest uppercase ${statusStyles[application.status]}`}
+                      >
+                        {application.status}
+                      </span>
+                    </p>
+                    <p className="text-muted mt-1 text-sm">
+                      {application.email} &middot; {application.studentId} &middot;{' '}
+                      {application.courseYear}
+                    </p>
+                    <p className="text-foreground mt-2 text-sm">
+                      <span className="text-muted">Plays:</span> {application.gamesPlayed}
+                    </p>
+                    <p className="text-muted mt-1 text-sm whitespace-pre-line">
+                      {application.message}
+                    </p>
+                    <p className="text-muted mt-2 text-xs">
+                      Submitted {formatEventDate(application.createdAt)}
+                      {application.reviewedBy && (
+                        <> &middot; Reviewed by {application.reviewedBy.name}</>
+                      )}
+                    </p>
+                  </div>
                 </div>
 
                 {application.status === 'PENDING' && (
