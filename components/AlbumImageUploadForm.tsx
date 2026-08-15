@@ -18,14 +18,18 @@ export function AlbumImageUploadForm({ action }: AlbumImageUploadFormProps) {
         <label htmlFor="file" className="text-muted text-sm font-medium">
           Add a photo
         </label>
-        <input
-          id="file"
-          name="file"
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          required
-          className="text-foreground file:bg-guild-green file:text-background hover:file:bg-guild-green-dim mt-1 block text-sm file:mr-4 file:rounded-md file:border-0 file:px-4 file:py-2 file:text-sm file:font-bold file:tracking-wide file:uppercase"
-        />
+        <label htmlFor="files" className="text-muted text-sm font-medium">
+  Add photos or videos
+</label>
+<input
+  id="files"
+  name="files"
+  type="file"
+  accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
+  multiple
+  required
+  className="text-foreground file:bg-guild-green file:text-background hover:file:bg-guild-green-dim mt-1 block text-sm file:mr-4 file:rounded-md file:border-0 file:px-4 file:py-2 file:text-sm file:font-bold file:tracking-wide file:uppercase"
+/>
       </div>
       <button
         type="submit"

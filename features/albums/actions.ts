@@ -1,7 +1,7 @@
 'use server';
 
 import { del } from '@vercel/blob';
-import { validateAndUploadImage } from '@/lib/blob';
+import { validateAndUploadImage, validateAndUploadVideo } from '@/lib/blob';
 import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { albumFormSchema } from '@/lib/validation/album';
@@ -152,21 +152,29 @@ export async function uploadAlbumImageAction(
   const user = await requireUser();
   if (!user) return { message: 'You must be signed in to upload images.' };
 
-  const file = formData.get('file');
-  if (!(file instanceof File)) return { message: 'Please choose an image file.' };
+  const files = formData.getAll('files').filter((f): f is File => f instanceof File && f.size > 0);
+  if (files.length === 0) return { message: 'Please choose at least one photo or video.' };
 
-  const result = await validateAndUploadImage(file, 'albums');
-  if ('error' in result) return { message: result.error };
+  let firstImageId: string | null = null;
 
-  const image = await prisma.galleryImage.create({
-    data: { url: result.url, albumId, uploadedById: user.id },
-  });
+  for (const file of files) {
+    const isVideo = file.type.startsWith('video/');
+    const result = isVideo
+      ? await validateAndUploadVideo(file, 'albums')
+      : await validateAndUploadImage(file, 'albums');
+    if ('error' in result) return { message: result.error };
 
-  // First image uploaded to an album automatically becomes its cover, so
-  // an album is never left with no thumbnail after just one upload.
+    const created = await prisma.galleryImage.create({
+      data: { url: result.url, type: isVideo ? 'VIDEO' : 'IMAGE', albumId, uploadedById: user.id },
+    });
+    if (!isVideo && !firstImageId) firstImageId = created.id;
+  }
+
+  // If the album has no cover yet, use the first IMAGE from this batch
+  // (videos can't be a static cover thumbnail).
   const album = await prisma.album.findUnique({ where: { id: albumId } });
-  if (album && !album.coverImageId) {
-    await prisma.album.update({ where: { id: albumId }, data: { coverImageId: image.id } });
+  if (album && !album.coverImageId && firstImageId) {
+    await prisma.album.update({ where: { id: albumId }, data: { coverImageId: firstImageId } });
   }
 
   revalidatePath('/gallery');

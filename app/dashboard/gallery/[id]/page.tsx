@@ -37,19 +37,23 @@ export default async function ManageAlbumPage({ params }: { params: Promise<{ id
                 key={image.id}
                 className="border-guild-green/20 bg-surface overflow-hidden rounded-lg border"
               >
-                <Image
-                  src={image.url}
-                  alt=""
-                  width={300}
-                  height={300}
-                  className="aspect-square w-full object-cover"
-                />
+                {image.type === 'VIDEO' ? (
+  <video src={image.url} className="aspect-square w-full object-cover" />
+) : (
+  <Image
+    src={image.url}
+    alt=""
+    width={300}
+    height={300}
+    className="aspect-square w-full object-cover"
+  />
+)}
                 <div className="flex flex-col gap-1 p-2">
                   {isCover ? (
                     <span className="text-guild-gold text-center font-mono text-[10px] tracking-widest uppercase">
                       Cover
                     </span>
-                  ) : (
+                  ) : image.type !== 'VIDEO' ? (
                     <form action={setCoverImageAction.bind(null, album.id, image.id)}>
                       <button
                         type="submit"
@@ -58,7 +62,7 @@ export default async function ManageAlbumPage({ params }: { params: Promise<{ id
                         Set as Cover
                       </button>
                     </form>
-                  )}
+                 ) : null}
                   <form action={deleteAlbumImageAction.bind(null, image.id, image.url, album.id)}>
                     <button
                       type="submit"

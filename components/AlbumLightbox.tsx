@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, type TouchEvent } from 'react';
 import Image from 'next/image';
 
-type LightboxImage = { id: string; url: string; caption?: string | null };
+type LightboxImage = { id: string; url: string; type: 'IMAGE' | 'VIDEO'; caption?: string | null };
 
 export function AlbumLightbox({ images }: { images: LightboxImage[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -49,13 +49,17 @@ export function AlbumLightbox({ images }: { images: LightboxImage[] }) {
             onClick={() => setOpenIndex(i)}
             className="border-guild-green/20 bg-surface overflow-hidden rounded-lg border"
           >
-            <Image
-              src={image.url}
-              alt={image.caption ?? ''}
-              width={300}
-              height={300}
-              className="aspect-square w-full object-cover transition-opacity hover:opacity-80"
-            />
+           {image.type === 'VIDEO' ? (
+  <video src={image.url} className="aspect-square w-full object-cover transition-opacity hover:opacity-80" />
+) : (
+  <Image
+    src={image.url}
+    alt={image.caption ?? ''}
+    width={300}
+    height={300}
+    className="aspect-square w-full object-cover transition-opacity hover:opacity-80"
+  />
+)}
           </button>
         ))}
       </div>
@@ -86,14 +90,24 @@ export function AlbumLightbox({ images }: { images: LightboxImage[] }) {
           >
             &#8249;
           </button>
-          <Image
-            src={images[openIndex].url}
-            alt={images[openIndex].caption ?? ''}
-            width={1200}
-            height={1200}
-            className="max-h-[85vh] w-auto max-w-[90vw] object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
+          {images[openIndex].type === 'VIDEO' ? (
+  <video
+    src={images[openIndex].url}
+    controls
+    autoPlay
+    className="max-h-[85vh] w-auto max-w-[90vw] object-contain"
+    onClick={(e) => e.stopPropagation()}
+  />
+) : (
+  <Image
+    src={images[openIndex].url}
+    alt={images[openIndex].caption ?? ''}
+    width={1200}
+    height={1200}
+    className="max-h-[85vh] w-auto max-w-[90vw] object-contain"
+    onClick={(e) => e.stopPropagation()}
+  />
+)}
           <button
             type="button"
             onClick={(e) => {

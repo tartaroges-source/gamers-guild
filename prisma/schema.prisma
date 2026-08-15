@@ -176,6 +176,7 @@ model Album {
 model GalleryImage {
   id      String  @id @default(cuid())
   url     String
+   type    EventMediaType @default(IMAGE)
   caption String?
 
   album   Album  @relation("AlbumImages", fields: [albumId], references: [id], onDelete: Cascade)
