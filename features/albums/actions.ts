@@ -142,6 +142,7 @@ export async function setFeaturedAlbumAction(id: string) {
 
   revalidatePath('/gallery');
   revalidatePath('/dashboard/gallery');
+  revalidatePath('/');
 }
 
 export async function uploadAlbumImageAction(

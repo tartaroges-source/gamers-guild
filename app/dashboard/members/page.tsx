@@ -1,11 +1,21 @@
 import QRCode from 'qrcode';
-import { getMembersForDashboard } from '@/features/members/queries';
+import { getMembersForDashboard, getDistinctCourses } from '@/features/members/queries';
 import { getBaseUrl } from '@/lib/url';
 import { formatEventDate } from '@/lib/format';
 import { MemberQrCard } from '@/components/MemberQrCard';
+import { toggleMemberStatusAction } from '@/features/members/actions';
 
-export default async function DashboardMembersPage() {
-  const [members, baseUrl] = await Promise.all([getMembersForDashboard(), getBaseUrl()]);
+export default async function DashboardMembersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string; course?: string }>;
+}) {
+  const { search, course } = await searchParams;
+  const [members, baseUrl, courses] = await Promise.all([
+    getMembersForDashboard(search, course),
+    getBaseUrl(),
+    getDistinctCourses(),
+  ]);
 
   const membersWithQr = await Promise.all(
     members.map(async (member) => ({
@@ -20,12 +30,39 @@ export default async function DashboardMembersPage() {
         Members
       </h1>
       <p className="text-muted mt-2">
-        Each member has a unique QR code. Click a code to preview and download it. Scanning it
-        confirms their membership without needing a login.
+        Search by name, student ID, or course. Click a QR code to preview and download it.
       </p>
 
+      <form method="get" className="mt-6 flex flex-wrap gap-3">
+        <input
+          type="text"
+          name="search"
+          defaultValue={search ?? ''}
+          placeholder="Search by name, student ID, or course..."
+          className="border-guild-green/30 bg-background text-foreground focus:border-guild-green focus:ring-guild-green min-w-[240px] flex-1 rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+        />
+        <select
+          name="course"
+          defaultValue={course ?? ''}
+          className="border-guild-green/30 bg-background text-foreground focus:border-guild-green focus:ring-guild-green rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+        >
+          <option value="">All Courses</option>
+          {courses.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <button
+          type="submit"
+          className="bg-guild-green font-display text-background hover:bg-guild-green-dim rounded-md px-4 py-2 text-sm font-bold tracking-wide uppercase"
+        >
+          Filter
+        </button>
+      </form>
+
       {membersWithQr.length === 0 ? (
-        <p className="text-muted mt-8">No approved members yet.</p>
+        <p className="text-muted mt-8">No members match your search.</p>
       ) : (
         <div className="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           {membersWithQr.map((member) => (
@@ -43,15 +80,21 @@ export default async function DashboardMembersPage() {
                   {member.fullName}
                 </p>
                 <p className="text-muted mt-0.5 text-xs">
+                  {member.studentId} &middot; {member.courseYear}
+                </p>
+                <p className="text-muted mt-0.5 text-xs">
                   Member since {formatEventDate(member.joinedAt)}
                 </p>
-                <p
-                  className={`mt-1 font-mono text-xs uppercase ${
-                    member.status === 'ACTIVE' ? 'text-guild-green' : 'text-red-400'
-                  }`}
-                >
-                  {member.status}
-                </p>
+                <form action={toggleMemberStatusAction.bind(null, member.id)} className="mt-1">
+                  <button
+                    type="submit"
+                    className={`font-mono text-xs uppercase underline ${
+                      member.status === 'ACTIVE' ? 'text-guild-green' : 'text-red-400'
+                    }`}
+                  >
+                    {member.status} (click to toggle)
+                  </button>
+                </form>
               </div>
             </div>
           ))}

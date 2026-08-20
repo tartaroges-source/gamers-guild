@@ -32,6 +32,11 @@ enum MemberStatus {
   INACTIVE
 }
 
+enum PaymentMethod {
+  CASH
+  ONLINE
+}
+
 enum HeroMediaType {
   IMAGE
   VIDEO
@@ -201,6 +206,8 @@ model MembershipApplication {
   gamesPlayed String
   message     String
   idPictureUrl String?
+  paymentMethod   PaymentMethod @default(CASH)
+  paymentProofUrl String?
 
   status ApplicationStatus @default(PENDING)
 
@@ -223,6 +230,8 @@ model Member {
   id       String       @id @default(cuid())
   fullName String
   email    String
+  studentId  String
+  courseYear String
   status   MemberStatus @default(ACTIVE)
 
   application   MembershipApplication @relation(fields: [applicationId], references: [id])

@@ -27,10 +27,7 @@ export function MemberQrCard({ fullName, qrDataUrl, fileName }: MemberQrCardProp
         />
       </button>
 
-      <dialog
-        ref={dialogRef}
-        className="border-guild-green/30 bg-surface rounded-lg border p-6 backdrop:bg-black/70"
-      >
+      <dialog ref={dialogRef} className="m-auto rounded-lg border border-guild-green/30 bg-surface p-6 backdrop:bg-black/70">
         <div className="flex flex-col items-center gap-4">
           <p className="font-display text-foreground text-sm font-bold tracking-wide uppercase">
             {fullName}

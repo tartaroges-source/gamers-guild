@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { submitApplicationAction } from '@/features/applications/actions';
 import { IdPictureUpload } from '@/components/IdPictureUpload';
 
@@ -10,6 +10,7 @@ const labelClasses = 'text-sm font-medium text-muted';
 
 export function ApplicationForm() {
   const [state, formAction, isPending] = useActionState(submitApplicationAction, undefined);
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'ONLINE'>('CASH');
 
   if (state?.success) {
     return (
@@ -85,6 +86,47 @@ export function ApplicationForm() {
 
       <div>
         <IdPictureUpload />
+        <div>
+  <label className="text-sm font-medium text-muted">Payment Method</label>
+  <div className="mt-2 flex gap-4">
+    <label className="flex items-center gap-2 text-sm text-foreground">
+      <input
+        type="radio"
+        name="paymentMethod"
+        value="CASH"
+        checked={paymentMethod === 'CASH'}
+        onChange={() => setPaymentMethod('CASH')}
+      />
+      Cash
+    </label>
+    <label className="flex items-center gap-2 text-sm text-foreground">
+      <input
+        type="radio"
+        name="paymentMethod"
+        value="ONLINE"
+        checked={paymentMethod === 'ONLINE'}
+        onChange={() => setPaymentMethod('ONLINE')}
+      />
+      Online / Bank Transfer
+    </label>
+  </div>
+</div>
+
+{paymentMethod === 'ONLINE' && (
+  <div>
+    <label htmlFor="paymentProof" className={labelClasses}>
+      Payment Receipt (clear photo showing the reference number)
+    </label>
+    <input
+      id="paymentProof"
+      name="paymentProof"
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      required
+      className="mt-1 w-full text-sm text-foreground file:mr-4 file:rounded-md file:border-0 file:bg-guild-green file:px-4 file:py-2 file:text-sm file:font-bold file:tracking-wide file:text-background file:uppercase hover:file:bg-guild-green-dim"
+    />
+  </div>
+)}
       </div>
 
       <div>

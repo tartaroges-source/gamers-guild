@@ -38,7 +38,24 @@ export default async function DashboardApplicationsPage() {
                       height={64}
                       className="h-16 w-16 flex-shrink-0 rounded-md object-cover"
                     />
+                    
                   )}
+                  <div className="mt-2 text-xs text-muted">
+  <p>
+    Payment: <span className="text-foreground">{application.paymentMethod}</span>
+  </p>
+  {application.paymentProofUrl && (
+    <a href={application.paymentProofUrl} target="_blank" rel="noopener noreferrer">
+      <Image
+        src={application.paymentProofUrl}
+        alt="Payment receipt"
+        width={64}
+        height={64}
+        className="mt-1 h-16 w-16 rounded-md object-cover hover:opacity-80"
+      />
+    </a>
+  )}
+</div>
                   <div>
                     <p className="font-display text-foreground font-bold uppercase">
                       {application.fullName}{' '}

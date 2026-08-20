@@ -37,6 +37,7 @@ export async function submitApplicationAction(
     courseYear: formData.get('courseYear'),
     gamesPlayed: formData.get('gamesPlayed'),
     message: formData.get('message'),
+    paymentMethod: formData.get('paymentMethod'),
   });
 
   if (!parsed.success) {
@@ -51,13 +52,26 @@ export async function submitApplicationAction(
     return { message: 'Please upload and crop your 2x2 ID picture.' };
   }
 
-  const uploadResult = await validateAndUploadImage(idPictureFile, 'id-pictures');
-  if ('error' in uploadResult) {
-    return { message: uploadResult.error };
+  const idUploadResult = await validateAndUploadImage(idPictureFile, 'id-pictures');
+  if ('error' in idUploadResult) {
+    return { message: idUploadResult.error };
+  }
+
+  let paymentProofUrl: string | null = null;
+  if (parsed.data.paymentMethod === 'ONLINE') {
+    const proofFile = formData.get('paymentProof');
+    if (!(proofFile instanceof File) || proofFile.size === 0) {
+      return { message: 'Please upload a clear photo of your payment receipt.' };
+    }
+    const proofResult = await validateAndUploadImage(proofFile, 'payment-proofs');
+    if ('error' in proofResult) {
+      return { message: proofResult.error };
+    }
+    paymentProofUrl = proofResult.url;
   }
 
   await prisma.membershipApplication.create({
-    data: { ...parsed.data, idPictureUrl: uploadResult.url },
+    data: { ...parsed.data, idPictureUrl: idUploadResult.url, paymentProofUrl },
   });
 
   return { success: true };
@@ -88,6 +102,8 @@ export async function approveApplicationAction(id: string) {
       data: {
         fullName: application.fullName,
         email: application.email,
+           studentId: application.studentId,
+    courseYear: application.courseYear,
         applicationId: application.id,
       },
     }),

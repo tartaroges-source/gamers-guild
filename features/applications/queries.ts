@@ -7,3 +7,6 @@ export async function getApplicationsForDashboard() {
     include: { reviewedBy: { select: { name: true } } },
   });
 }
+export async function getPendingApplicationsCount() {
+  return prisma.membershipApplication.count({ where: { status: 'PENDING' } });
+}

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { auth } from '@/lib/auth';
 import { logoutAction } from '@/features/auth/actions';
+import { getPendingApplicationsCount } from '@/features/applications/queries';
 
 const dashboardLinks = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -16,8 +17,10 @@ const dashboardLinks = [
 ];
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth();
+  // const session = await auth();
+  const [session, pendingCount] = await Promise.all([auth(), getPendingApplicationsCount()]);
   const isAdmin = session?.user?.role === 'ADMIN';
+  
 
   const links = isAdmin
     ? [
@@ -36,14 +39,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
             aria-label="Dashboard navigation"
           >
             {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="font-display text-muted hover:text-guild-green text-sm font-semibold tracking-widest uppercase transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
+  <Link
+    key={link.href}
+    href={link.href}
+    className="font-display text-muted hover:text-guild-green flex items-center gap-1.5 text-sm font-semibold tracking-widest uppercase transition-colors"
+  >
+    {link.label}
+    {link.href === '/dashboard/applications' && pendingCount > 0 && (
+      <span className="bg-guild-gold text-background rounded-full px-1.5 py-0.5 text-[10px] font-bold">
+        {pendingCount}
+      </span>
+    )}
+  </Link>
+))}
           </nav>
           <form action={logoutAction}>
             <button
