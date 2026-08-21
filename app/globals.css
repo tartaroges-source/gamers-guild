@@ -25,6 +25,19 @@
   --font-mono: var(--font-jetbrains-mono);
 }
 
+@theme {
+  --animate-spin-slow: spin-slow 20s linear infinite;
+
+  @keyframes spin-slow {
+    from {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    to {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
