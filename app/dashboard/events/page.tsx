@@ -50,7 +50,12 @@ export default async function DashboardEventsPage() {
               <div className="flex flex-wrap gap-2">
                 {!event.isFeatured && (
                   <form action={setFeaturedEventAction.bind(null, event.id)}>
-                    <ConfirmButton className="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10">Delete</ConfirmButton>
+                    <button
+                      type="submit"
+                      className="border-guild-gold/40 text-guild-gold hover:bg-guild-gold/10 rounded-md border px-3 py-1.5 text-sm"
+                    >
+                      Set Featured
+                    </button>
                   </form>
                 )}
                 <Link
@@ -66,12 +71,7 @@ export default async function DashboardEventsPage() {
                   Edit
                 </Link>
                 <form action={deleteEventAction.bind(null, event.id)}>
-                  <button
-                    type="submit"
-                    className="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10"
-                  >
-                    Delete
-                  </button>
+                  <ConfirmButton className="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10">Delete</ConfirmButton>
                 </form>
               </div>
             </li>
