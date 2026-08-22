@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getTeamMembersForDashboard } from '@/features/team/queries';
 import { deleteTeamMemberAction } from '@/features/team/actions';
+import { ConfirmButton } from '@/components/ConfirmButton';
 
 export default async function DashboardTeamPage() {
   const members = await getTeamMembersForDashboard();
@@ -59,12 +60,7 @@ export default async function DashboardTeamPage() {
                   Edit
                 </Link>
                 <form action={deleteTeamMemberAction.bind(null, member.id)}>
-                  <button
-                    type="submit"
-                    className="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10"
-                  >
-                    Delete
-                  </button>
+                  <ConfirmButton className="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10">Delete</ConfirmButton>
                 </form>
               </div>
             </li>

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { getUsers } from '@/features/users/queries';
 import { deleteUserAction } from '@/features/users/actions';
+import { ConfirmButton } from '@/components/ConfirmButton';
 
 export default async function DashboardOfficersPage() {
   const session = await auth();
@@ -57,12 +58,7 @@ export default async function DashboardOfficersPage() {
                   Edit
                 </Link>
                 <form action={deleteUserAction.bind(null, user.id)}>
-                  <button
-                    type="submit"
-                    className="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10"
-                  >
-                    Delete
-                  </button>
+                  <ConfirmButton className="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10">Delete</ConfirmButton>
                 </form>
               </div>
             )}

@@ -55,6 +55,7 @@ model User {
   email     String   @unique
   password  String // stored as a bcrypt hash, never plain text
   role      Role     @default(OFFICER)
+  avatarUrl String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

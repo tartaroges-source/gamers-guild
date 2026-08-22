@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getAlbumsForDashboard } from '@/features/albums/queries';
 import { deleteAlbumAction, setFeaturedAlbumAction } from '@/features/albums/actions';
+import { ConfirmButton } from '@/components/ConfirmButton';
 
 export default async function DashboardGalleryPage() {
   const albums = await getAlbumsForDashboard();
@@ -66,12 +67,7 @@ export default async function DashboardGalleryPage() {
                   Edit Info
                 </Link>
                 <form action={deleteAlbumAction.bind(null, album.id)}>
-                  <button
-                    type="submit"
-                    className="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10"
-                  >
-                    Delete
-                  </button>
+                  <ConfirmButton className="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10">Delete</ConfirmButton>
                 </form>
               </div>
             </li>

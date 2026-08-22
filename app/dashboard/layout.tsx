@@ -1,11 +1,9 @@
-import Link from 'next/link';
 import { auth } from '@/lib/auth';
-import { logoutAction } from '@/features/auth/actions';
 import { getPendingApplicationsCount } from '@/features/applications/queries';
+import { DashboardSidebar } from '@/components/DashboardSidebar';
 
 const dashboardLinks = [
   { href: '/dashboard', label: 'Dashboard' },
-  { href: '/dashboard/homepage', label: 'Homepage' },
   { href: '/dashboard/events', label: 'Events' },
   { href: '/dashboard/announcements', label: 'Announcements' },
   { href: '/dashboard/gallery', label: 'Gallery' },
@@ -17,53 +15,34 @@ const dashboardLinks = [
 ];
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  // const session = await auth();
   const [session, pendingCount] = await Promise.all([auth(), getPendingApplicationsCount()]);
   const isAdmin = session?.user?.role === 'ADMIN';
-  
 
-  const links = isAdmin
-    ? [
-        ...dashboardLinks,
-        { href: '/dashboard/officers', label: 'Officers' },
-        { href: '/dashboard/settings', label: 'Settings' },
-      ]
-    : dashboardLinks;
+  const links = (
+    isAdmin
+      ? [
+          ...dashboardLinks,
+          { href: '/dashboard/officers', label: 'Officers' },
+          { href: '/dashboard/settings', label: 'Settings' },
+        ]
+      : dashboardLinks
+  ).map((link) => ({
+    ...link,
+    badge: link.href === '/dashboard/applications' ? pendingCount : undefined,
+  }));
 
   return (
-    <div className="bg-background min-h-screen">
-      <header className="border-guild-green/30 bg-background/95 sticky top-0 z-50 border-b backdrop-blur">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <nav
-            className="flex flex-wrap items-center gap-x-6 gap-y-2"
-            aria-label="Dashboard navigation"
-          >
-            {links.map((link) => (
-  <Link
-    key={link.href}
-    href={link.href}
-    className="font-display text-muted hover:text-guild-green flex items-center gap-1.5 text-sm font-semibold tracking-widest uppercase transition-colors"
-  >
-    {link.label}
-    {link.href === '/dashboard/applications' && pendingCount > 0 && (
-      <span className="bg-guild-gold text-background rounded-full px-1.5 py-0.5 text-[10px] font-bold">
-        {pendingCount}
-      </span>
-    )}
-  </Link>
-))}
-          </nav>
-          <form action={logoutAction}>
-            <button
-              type="submit"
-              className="border-guild-green/30 text-muted hover:bg-surface rounded-md border px-4 py-1.5 text-sm"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
-      </header>
-      {children}
+    <div className="bg-background flex min-h-screen">
+      <DashboardSidebar
+        links={links}
+        user={{
+          name: session?.user?.name,
+          email: session?.user?.email,
+          role: session?.user?.role,
+          image: session?.user?.image,
+        }}
+      />
+      <div className="flex-1">{children}</div>
     </div>
   );
 }

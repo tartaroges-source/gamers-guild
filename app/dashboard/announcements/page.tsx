@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getAnnouncementsForDashboard } from '@/features/announcements/queries';
 import { formatEventDate } from '@/lib/format';
 import { deleteAnnouncementAction } from '@/features/announcements/actions';
+import { ConfirmButton } from '@/components/ConfirmButton';
 
 export default async function DashboardAnnouncementsPage() {
   const announcements = await getAnnouncementsForDashboard();
@@ -48,12 +49,7 @@ export default async function DashboardAnnouncementsPage() {
                   Edit
                 </Link>
                 <form action={deleteAnnouncementAction.bind(null, announcement.id)}>
-                  <button
-                    type="submit"
-                    className="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10"
-                  >
-                    Delete
-                  </button>
+                  <ConfirmButton className="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10">Delete</ConfirmButton>
                 </form>
               </div>
             </li>

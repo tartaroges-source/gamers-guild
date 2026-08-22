@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react';
 import { createCoreValueAction, deleteCoreValueAction } from '@/features/about/actions';
+import { ConfirmButton } from '@/components/ConfirmButton';
 
 type CoreValuesManagerProps = {
   values: { id: string; title: string; description: string }[];
@@ -25,12 +26,7 @@ export function CoreValuesManager({ values }: CoreValuesManagerProps) {
               <p className="text-muted mt-0.5 text-xs">{value.description}</p>
             </div>
             <form action={deleteCoreValueAction.bind(null, value.id)}>
-              <button
-                type="submit"
-                className="rounded-md border border-red-500/40 px-2 py-1 text-xs text-red-400 hover:bg-red-500/10"
-              >
-                Delete
-              </button>
+              <ConfirmButton className="rounded-md border border-red-500/40 px-2 py-1 text-xs text-red-400 hover:bg-red-500/10">Delete</ConfirmButton>
             </form>
           </li>
         ))}

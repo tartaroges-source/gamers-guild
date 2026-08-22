@@ -7,6 +7,7 @@ import {
   setCoverImageAction,
 } from '@/features/albums/actions';
 import { AlbumImageUploadForm } from '@/components/AlbumImageUploadForm';
+import { ConfirmButton } from '@/components/ConfirmButton';
 
 export default async function ManageAlbumPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -64,12 +65,7 @@ export default async function ManageAlbumPage({ params }: { params: Promise<{ id
                     </form>
                  ) : null}
                   <form action={deleteAlbumImageAction.bind(null, image.id, image.url, album.id)}>
-                    <button
-                      type="submit"
-                      className="w-full rounded-md border border-red-500/40 px-2 py-1 text-xs text-red-400 hover:bg-red-500/10"
-                    >
-                      Delete
-                    </button>
+                    <ConfirmButton className="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10">Delete</ConfirmButton>
                   </form>
                 </div>
               </div>

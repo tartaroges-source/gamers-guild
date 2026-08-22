@@ -3,6 +3,7 @@ import { getAllEvents } from '@/features/events/queries';
 import { formatEventDate } from '@/lib/format';
 import { deleteEventAction } from '@/features/events/actions';
 import { setFeaturedEventAction } from '@/features/events/media';
+import { ConfirmButton } from '@/components/ConfirmButton';
 
 export default async function DashboardEventsPage() {
   const events = await getAllEvents();
@@ -49,12 +50,7 @@ export default async function DashboardEventsPage() {
               <div className="flex flex-wrap gap-2">
                 {!event.isFeatured && (
                   <form action={setFeaturedEventAction.bind(null, event.id)}>
-                    <button
-                      type="submit"
-                      className="border-guild-gold/40 text-guild-gold hover:bg-guild-gold/10 rounded-md border px-3 py-1.5 text-sm"
-                    >
-                      Set Featured
-                    </button>
+                    <ConfirmButton className="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10">Delete</ConfirmButton>
                   </form>
                 )}
                 <Link
