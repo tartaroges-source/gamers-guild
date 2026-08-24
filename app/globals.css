@@ -57,3 +57,17 @@ select:focus-visible,
   outline: 2px solid var(--guild-green);
   outline-offset: 2px;
 }
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(-15px, 10px) rotate(2deg);
+  }
+}
+
+.animate-drift {
+  animation: drift 14s ease-in-out infinite;
+}
+
