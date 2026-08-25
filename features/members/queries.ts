@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db';
 
-export async function getMembersForDashboard(search?: string, course?: string) {
+export async function getMembersForDashboard(search?: string, course?: string, status?: string) {
   return prisma.member.findMany({
     where: {
       AND: [
@@ -14,6 +14,7 @@ export async function getMembersForDashboard(search?: string, course?: string) {
             }
           : {},
         course ? { courseYear: course } : {},
+        status === 'ACTIVE' || status === 'INACTIVE' ? { status } : {},
       ],
     },
     orderBy: { joinedAt: 'desc' },

@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { auth } from '@/lib/auth';
 import { AvatarUploadForm } from '@/components/AvatarUploadForm';
+import { ChangePasswordForm } from '@/components/ChangePasswordForm';
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -33,6 +34,12 @@ export default async function ProfilePage() {
           </div>
         </div>
         <AvatarUploadForm />
+        <div>
+  <h2 className="font-display text-lg font-bold text-foreground uppercase">Change Password</h2>
+  <div className="mt-3">
+    <ChangePasswordForm />
+  </div>
+</div>
       </div>
     </main>
   );

@@ -8,14 +8,14 @@ import { toggleMemberStatusAction } from '@/features/members/actions';
 export default async function DashboardMembersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; course?: string }>;
+  searchParams: Promise<{ search?: string; course?: string; status?: string }>;
 }) {
-  const { search, course } = await searchParams;
-  const [members, baseUrl, courses] = await Promise.all([
-    getMembersForDashboard(search, course),
-    getBaseUrl(),
-    getDistinctCourses(),
-  ]);
+  const { search, course, status } = await searchParams;
+const [members, baseUrl, courses] = await Promise.all([
+  getMembersForDashboard(search, course, status),
+  getBaseUrl(),
+  getDistinctCourses(),
+]);
 
   const membersWithQr = await Promise.all(
     members.map(async (member) => ({
@@ -53,6 +53,15 @@ export default async function DashboardMembersPage({
             </option>
           ))}
         </select>
+        <select
+  name="status"
+  defaultValue={status ?? ''}
+  className="border-guild-green/30 bg-background text-foreground focus:border-guild-green focus:ring-guild-green rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+>
+  <option value="">All Statuses</option>
+  <option value="ACTIVE">Active</option>
+  <option value="INACTIVE">Inactive</option>
+</select>
         <button
           type="submit"
           className="bg-guild-green font-display text-background hover:bg-guild-green-dim rounded-md px-4 py-2 text-sm font-bold tracking-wide uppercase"
