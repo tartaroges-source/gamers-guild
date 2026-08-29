@@ -25,14 +25,14 @@ export const applicationFormSchema = z
       .trim()
       .regex(/^\d{7}$/, 'Student ID must be exactly 7 digits, numbers only.'),
     department: z.enum(DEPARTMENTS, {
-      errorMap: () => ({ message: 'Please select a department.' }),
+      error: 'Please select a department.',
     }),
     course: z.string().min(1, 'Please select a course.'),
     yearLevel: z.string().min(1, 'Please select a year level.'),
     gamesPlayed: z.string().trim().min(1, 'Please tell us what games you play.'),
     message: z.string().trim().min(10, 'Please write a bit more about why you want to join.'),
     paymentMethod: z.enum(['CASH', 'ONLINE'], {
-      errorMap: () => ({ message: 'Please select a payment method.' }),
+      error: 'Please select a payment method.',
     }),
   })
   .refine((data) => COURSES_BY_DEPARTMENT[data.department]?.includes(data.course), {
