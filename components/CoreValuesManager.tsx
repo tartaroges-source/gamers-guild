@@ -15,20 +15,22 @@ export function CoreValuesManager({ values }: CoreValuesManagerProps) {
     <div className="max-w-2xl">
       <ul className="flex flex-col gap-2">
         {values.map((value) => (
-          <li
-            key={value.id}
-            className="border-guild-green/20 bg-surface flex items-start justify-between gap-3 rounded-lg border p-3"
-          >
-            <div>
-              <p className="font-display text-foreground text-sm font-bold uppercase">
-                {value.title}
-              </p>
-              <p className="text-muted mt-0.5 text-xs">{value.description}</p>
-            </div>
-            <form action={deleteCoreValueAction.bind(null, value.id)}>
-              <ConfirmButton className="rounded-md border border-red-500/40 px-2 py-1 text-xs text-red-400 hover:bg-red-500/10">Delete</ConfirmButton>
-            </form>
-          </li>
+         <li
+  key={value.id}
+  className="border-guild-green/20 bg-surface flex items-start justify-between gap-3 rounded-lg border p-3"
+>
+  <div className="min-w-0">
+    <p className="font-display text-foreground text-sm font-bold uppercase break-words">
+      {value.title}
+    </p>
+    <p className="text-muted mt-0.5 text-xs break-words">{value.description}</p>
+  </div>
+  <form action={deleteCoreValueAction.bind(null, value.id)}>
+    <ConfirmButton className="shrink-0 rounded-md border border-red-500/40 px-2 py-1 text-xs text-red-400 hover:bg-red-500/10">
+      Delete
+    </ConfirmButton>
+  </form>
+</li>
         ))}
       </ul>
 

@@ -86,12 +86,12 @@ export function AboutContentForm({ defaultValues, hasHeroImage }: AboutContentFo
       )}
 
       <button
-        type="submit"
-        disabled={isPending}
-        className="bg-guild-green font-display text-background hover:bg-guild-green-dim w-fit rounded-md px-6 py-2.5 text-sm font-bold tracking-wide uppercase transition-colors disabled:opacity-50"
-      >
-        {isPending ? 'Saving...' : 'Save About Page'}
-      </button>
+  type="submit"
+  disabled={isPending}
+  className="bg-guild-green font-display text-background hover:bg-guild-green-dim w-full rounded-md px-6 py-2.5 text-sm font-bold tracking-wide uppercase transition-colors disabled:opacity-50 sm:w-fit"
+>
+  {isPending ? 'Saving...' : 'Save About Page'}
+</button>
     </form>
   );
 }

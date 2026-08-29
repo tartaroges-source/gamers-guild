@@ -32,7 +32,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }));
 
   return (
-    <div className="bg-background flex min-h-screen">
+    <div className="bg-background flex min-h-screen flex-col md:flex-row">
       <DashboardSidebar
         links={links}
         user={{
@@ -42,7 +42,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           image: session?.user?.image,
         }}
       />
-      <div className="flex-1">{children}</div>
+      <div className="flex-1 pb-16 md:pb-0">{children}</div>
     </div>
   );
 }

@@ -8,33 +8,37 @@ export default async function DashboardAnnouncementsPage() {
   const announcements = await getAnnouncementsForDashboard();
 
   return (
-    <main className="p-8">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-foreground text-2xl font-bold tracking-wide uppercase">
+    <main className="p-4 sm:p-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="font-display text-foreground text-xl font-bold tracking-wide uppercase sm:text-2xl">
           Announcements
         </h1>
         <Link
           href="/dashboard/announcements/new"
-          className="bg-guild-green font-display text-background hover:bg-guild-green-dim rounded-md px-4 py-2 text-sm font-bold tracking-wide uppercase"
+          className="bg-guild-green font-display text-background hover:bg-guild-green-dim rounded-md px-4 py-2.5 text-center text-sm font-bold tracking-wide uppercase sm:py-2"
         >
           + New Announcement
         </Link>
       </div>
 
       {announcements.length === 0 ? (
-        <p className="text-muted mt-8">No announcements yet. Create the first one above.</p>
+        <div className="border-guild-green/20 bg-surface mt-6 flex flex-col items-center gap-2 rounded-lg border border-dashed px-4 py-12 text-center sm:mt-8">
+          <span className="font-display text-guild-green/60 text-3xl">＋</span>
+          <p className="text-foreground text-sm font-semibold">No announcements yet</p>
+          <p className="text-muted text-xs">Create the first one to let members know what's new.</p>
+        </div>
       ) : (
-        <ul className="mt-8 flex flex-col gap-3">
+        <ul className="mt-6 flex flex-col gap-3 sm:mt-8">
           {announcements.map((announcement) => (
             <li
               key={announcement.id}
               className="border-guild-green/20 bg-surface flex flex-col justify-between gap-3 rounded-lg border p-4 sm:flex-row sm:items-center"
             >
-              <div>
+              <div className="min-w-0">
                 <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
                   {formatEventDate(announcement.createdAt)}
                 </p>
-                <p className="font-display text-foreground mt-1 font-bold uppercase">
+                <p className="font-display text-foreground mt-1 font-bold uppercase break-words">
                   {announcement.title}
                 </p>
                 <p className="text-muted mt-0.5 text-xs">
@@ -44,12 +48,14 @@ export default async function DashboardAnnouncementsPage() {
               <div className="flex gap-2">
                 <Link
                   href={`/dashboard/announcements/${announcement.id}/edit`}
-                  className="border-guild-green/40 text-guild-green hover:bg-guild-green/10 rounded-md border px-3 py-1.5 text-sm"
+                  className="border-guild-green/40 text-guild-green hover:bg-guild-green/10 flex-1 rounded-md border px-3 py-1.5 text-center text-sm sm:flex-none"
                 >
                   Edit
                 </Link>
-                <form action={deleteAnnouncementAction.bind(null, announcement.id)}>
-                  <ConfirmButton className="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10">Delete</ConfirmButton>
+                <form action={deleteAnnouncementAction.bind(null, announcement.id)} className="flex-1 sm:flex-none">
+                  <ConfirmButton className="w-full rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10">
+                    Delete
+                  </ConfirmButton>
                 </form>
               </div>
             </li>

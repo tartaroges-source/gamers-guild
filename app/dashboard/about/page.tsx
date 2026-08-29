@@ -6,13 +6,15 @@ export default async function DashboardAboutPage() {
   const [content, values] = await Promise.all([getAboutContent(), getCoreValues()]);
 
   return (
-    <main className="p-8">
-      <h1 className="font-display text-foreground text-2xl font-bold tracking-wide uppercase">
+    <main className="p-4 sm:p-8">
+      <h1 className="font-display text-foreground text-xl font-bold tracking-wide uppercase sm:text-2xl">
         About Page
       </h1>
-      <p className="text-muted mt-2">Controls the public About Us page content.</p>
+      <p className="text-muted mt-2 text-sm sm:text-base">
+        Controls the public About Us page content.
+      </p>
 
-      <div className="mt-8">
+      <div className="mt-6 sm:mt-8">
         <AboutContentForm
           defaultValues={{
             heroTagline: content.heroTagline ?? '',
@@ -27,7 +29,7 @@ export default async function DashboardAboutPage() {
         />
       </div>
 
-      <h2 className="font-display text-foreground mt-12 text-xl font-bold tracking-wide uppercase">
+      <h2 className="font-display text-foreground mt-10 text-lg font-bold tracking-wide uppercase sm:mt-12 sm:text-xl">
         Core Values
       </h2>
       <div className="mt-4">
