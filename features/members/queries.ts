@@ -9,11 +9,12 @@ export async function getMembersForDashboard(search?: string, course?: string, s
               OR: [
                 { fullName: { contains: search, mode: 'insensitive' } },
                 { studentId: { contains: search, mode: 'insensitive' } },
-                { courseYear: { contains: search, mode: 'insensitive' } },
+                { department: { contains: search, mode: 'insensitive' } },
+                { course: { contains: search, mode: 'insensitive' } },
               ],
             }
           : {},
-        course ? { courseYear: course } : {},
+        course ? { course } : {},
         status === 'ACTIVE' || status === 'INACTIVE' ? { status } : {},
       ],
     },
@@ -24,11 +25,11 @@ export async function getMembersForDashboard(search?: string, course?: string, s
 // Used to populate the course filter dropdown with real, distinct values.
 export async function getDistinctCourses() {
   const members = await prisma.member.findMany({
-    select: { courseYear: true },
-    distinct: ['courseYear'],
-    orderBy: { courseYear: 'asc' },
+    select: { course: true },
+    distinct: ['course'],
+    orderBy: { course: 'asc' },
   });
-  return members.map((m) => m.courseYear);
+  return members.map((m) => m.course);
 }
 
 export async function getMemberById(id: string) {

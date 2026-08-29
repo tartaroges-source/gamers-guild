@@ -3,6 +3,7 @@
 import { useActionState, useState } from 'react';
 import { submitApplicationAction } from '@/features/applications/actions';
 import { IdPictureUpload } from '@/components/IdPictureUpload';
+import { CourseSelect } from '@/components/CourseSelect';
 
 const inputClasses =
   'mt-1 w-full rounded-md border border-guild-green/30 bg-background px-3 py-2 text-foreground focus:border-guild-green focus:ring-1 focus:ring-guild-green focus:outline-none';
@@ -51,28 +52,53 @@ export function ApplicationForm() {
         <label htmlFor="studentId" className={labelClasses}>
           Student ID
         </label>
-        <input id="studentId" name="studentId" type="text" required className={inputClasses} />
+        <input
+  id="studentId"
+  name="studentId"
+  type="text"
+  inputMode="numeric"
+  pattern="\d{7}"
+  maxLength={7}
+  placeholder="7-digit student number"
+  required
+  onInput={(e) => {
+    e.currentTarget.value = e.currentTarget.value.replace(/\D/g, '').slice(0, 7);
+  }}
+  className={inputClasses}
+/>
         {state?.errors?.studentId && (
           <p className="mt-1 text-sm text-red-400">{state.errors.studentId[0]}</p>
         )}
       </div>
 
       <div>
-        <label htmlFor="courseYear" className={labelClasses}>
-          Course & Year Level
-        </label>
-        <input
-          id="courseYear"
-          name="courseYear"
-          type="text"
-          placeholder="e.g. BS Computer Science, 2nd Year"
-          required
-          className={inputClasses}
-        />
-        {state?.errors?.courseYear && (
-          <p className="mt-1 text-sm text-red-400">{state.errors.courseYear[0]}</p>
-        )}
-      </div>
+  <CourseSelect />
+  {state?.errors?.department && (
+    <p className="mt-1 text-sm text-red-400">{state.errors.department[0]}</p>
+  )}
+  {state?.errors?.course && (
+    <p className="mt-1 text-sm text-red-400">{state.errors.course[0]}</p>
+  )}
+</div>
+
+<div>
+  <label htmlFor="yearLevel" className={labelClasses}>
+    Year Level
+  </label>
+  <select id="yearLevel" name="yearLevel" required defaultValue="" className={inputClasses}>
+    <option value="" disabled>
+      Select year level
+    </option>
+    <option value="1st Year">1st Year</option>
+    <option value="2nd Year">2nd Year</option>
+    <option value="3rd Year">3rd Year</option>
+    <option value="4th Year">4th Year</option>
+    
+  </select>
+  {state?.errors?.yearLevel && (
+    <p className="mt-1 text-sm text-red-400">{state.errors.yearLevel[0]}</p>
+  )}
+</div>
 
       <div>
         <label htmlFor="gamesPlayed" className={labelClasses}>

@@ -34,7 +34,9 @@ export async function submitApplicationAction(
     fullName: formData.get('fullName'),
     email: formData.get('email'),
     studentId: formData.get('studentId'),
-    courseYear: formData.get('courseYear'),
+    department: formData.get('department'),
+    course: formData.get('course'),
+    yearLevel: formData.get('yearLevel'),
     gamesPlayed: formData.get('gamesPlayed'),
     message: formData.get('message'),
     paymentMethod: formData.get('paymentMethod'),
@@ -59,6 +61,18 @@ export async function submitApplicationAction(
       return {
         message:
           'You already have a pending application under this email or student ID. Please wait for it to be reviewed before submitting again.',
+      };
+    }
+
+    const existingMember = await prisma.member.findFirst({
+      where: {
+        OR: [{ email: parsed.data.email }, { studentId: parsed.data.studentId }],
+      },
+    });
+
+    if (existingMember) {
+      return {
+        message: 'This email or student ID is already registered to an existing member.',
       };
     }
 
@@ -97,6 +111,7 @@ export async function submitApplicationAction(
     };
   }
 }
+
 export async function approveApplicationAction(id: string) {
   const user = await requireUser();
   if (!user) return;
@@ -122,8 +137,10 @@ export async function approveApplicationAction(id: string) {
       data: {
         fullName: application.fullName,
         email: application.email,
-           studentId: application.studentId,
-    courseYear: application.courseYear,
+        studentId: application.studentId,
+        department: application.department,
+        course: application.course,
+        yearLevel: application.yearLevel,
         applicationId: application.id,
       },
     }),

@@ -10,11 +10,13 @@ export default async function VerifyMemberPage({ params }: { params: Promise<{ i
 
   return (
     <div className="relative mx-auto flex min-h-[70vh] max-w-md flex-col items-center overflow-hidden px-4 py-24 text-center sm:px-6">
-      <Reticle
-        className={`animate-spin-slow pointer-events-none absolute top-1/2 left-1/2 h-[420px] w-[420px] sm:h-[560px] sm:w-[560px] ${
-          isValid ? 'text-guild-green/[0.07]' : 'text-red-400/[0.07]'
-        }`}
-      />
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <Reticle
+          className={`animate-reticle-spin h-[420px] w-[420px] sm:h-[560px] sm:w-[560px] ${
+            isValid ? 'text-guild-green/[0.07]' : 'text-red-400/[0.07]'
+          }`}
+        />
+      </div>
 
       {isValid && member ? (
         <div className="relative">

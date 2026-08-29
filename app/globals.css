@@ -142,3 +142,19 @@ select:focus-visible,
   box-shadow: 0 0 0 1px rgba(31, 174, 89, 0.4), 0 20px 40px -16px rgba(31, 174, 89, 0.35);
   transform: translateY(-3px);
 }
+
+/* Slow, continuous rotation for decorative background reticles — kept
+   separate from centering so the animation only ever handles rotation,
+   never positioning. */
+@keyframes reticle-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-reticle-spin {
+  animation: reticle-spin 20s linear infinite;
+}

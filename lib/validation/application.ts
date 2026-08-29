@@ -1,25 +1,43 @@
 import { z } from 'zod';
 
-export const applicationFormSchema = z.object({
-  fullName: z
-    .string()
-    .trim()
-    .min(2, 'Full name is required.')
-    .max(120)
-    .regex(/^[A-Za-zÀ-ÿ'.\-\s]+$/, 'Name should only contain letters, spaces, and basic punctuation.'),
-  email: z.string().trim().email('Enter a valid email address.'),
-  studentId: z
-    .string()
-    .trim()
-    .regex(/^\d{5,10}$/, 'Student ID should be numbers only (e.g. 1416392).'),
-  courseYear: z.string().trim().min(3, 'Course & year level is required.').max(100),
-  gamesPlayed: z.string().trim().min(1, 'Let us know what games you play.').max(300),
-  message: z
-    .string()
-    .trim()
-    .min(10, 'Please write at least a short sentence (10+ characters).')
-    .max(1000),
-  paymentMethod: z.enum(['CASH', 'ONLINE']),
-});
+const DEPARTMENTS = ['COE', 'CCS', 'BSBA', 'COED', 'CHAS'] as const;
 
-export type ApplicationFormValues = z.infer<typeof applicationFormSchema>;
+const COURSES_BY_DEPARTMENT: Record<(typeof DEPARTMENTS)[number], string[]> = {
+  COE: ['BSCPE', 'BSIE', 'BSECE'],
+  CCS: ['BSIT', 'BSCS'],
+  BSBA: ['BSA', 'Marketing', 'Financial Management'],
+  COED: [
+    'BS Secondary Education - Major in Math',
+    'BS Secondary Education - Major in Social Science',
+    'BS Secondary Education - Major in English',
+    'BS Secondary Education - Major in Filipino',
+    'Elementary Education',
+  ],
+  CHAS: ['BSN', 'BSPSY'],
+};
+
+export const applicationFormSchema = z
+  .object({
+    fullName: z.string().trim().min(2, 'Please enter your full name.'),
+    email: z.string().trim().email('Please enter a valid email address.'),
+    studentId: z
+      .string()
+      .trim()
+      .regex(/^\d{7}$/, 'Student ID must be exactly 7 digits, numbers only.'),
+    department: z.enum(DEPARTMENTS, {
+      errorMap: () => ({ message: 'Please select a department.' }),
+    }),
+    course: z.string().min(1, 'Please select a course.'),
+    yearLevel: z.string().min(1, 'Please select a year level.'),
+    gamesPlayed: z.string().trim().min(1, 'Please tell us what games you play.'),
+    message: z.string().trim().min(10, 'Please write a bit more about why you want to join.'),
+    paymentMethod: z.enum(['CASH', 'ONLINE'], {
+      errorMap: () => ({ message: 'Please select a payment method.' }),
+    }),
+  })
+  .refine((data) => COURSES_BY_DEPARTMENT[data.department]?.includes(data.course), {
+    message: 'Selected course does not match the selected department.',
+    path: ['course'],
+  });
+
+export type ApplicationFormData = z.infer<typeof applicationFormSchema>;

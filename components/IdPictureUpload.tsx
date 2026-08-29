@@ -54,7 +54,7 @@ export function IdPictureUpload() {
       {/* This is the field that actually submits with the form — its
           value is set programmatically after cropping, never typed into
           directly. */}
-      <input type="file" name="idPicture" ref={hiddenInputRef} required className="hidden" />
+      <input type="file" name="idPicture" ref={hiddenInputRef}  className="hidden" />
 
       {!imageSrc && !previewUrl && (
         <input
