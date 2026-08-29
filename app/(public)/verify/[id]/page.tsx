@@ -9,9 +9,15 @@ export default async function VerifyMemberPage({ params }: { params: Promise<{ i
   const isValid = Boolean(member && member.status === 'ACTIVE');
 
   return (
-    <div className="mx-auto flex max-w-md flex-col items-center px-4 py-24 text-center sm:px-6">
+    <div className="relative mx-auto flex min-h-[70vh] max-w-md flex-col items-center overflow-hidden px-4 py-24 text-center sm:px-6">
+      <Reticle
+        className={`animate-drift pointer-events-none absolute top-1/2 left-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 sm:h-[560px] sm:w-[560px] ${
+          isValid ? 'text-guild-green/[0.07]' : 'text-red-400/[0.07]'
+        }`}
+      />
+
       {isValid && member ? (
-        <>
+        <div className="relative">
           {member.application?.idPictureUrl ? (
             <Image
               src={member.application.idPictureUrl}
@@ -28,9 +34,9 @@ export default async function VerifyMemberPage({ params }: { params: Promise<{ i
           </h1>
           <p className="text-foreground mt-3 text-lg">{member.fullName}</p>
           <p className="text-muted mt-1 text-sm">Member since {formatEventDate(member.joinedAt)}</p>
-        </>
+        </div>
       ) : (
-        <>
+        <div className="relative">
           <Reticle className="h-16 w-16 text-red-400" />
           <h1 className="font-display text-foreground mt-6 text-2xl font-bold tracking-wide uppercase">
             Not a Valid Member
@@ -38,7 +44,7 @@ export default async function VerifyMemberPage({ params }: { params: Promise<{ i
           <p className="text-muted mt-3 text-sm">
             This code doesn&apos;t match an active Gamers&apos; Guild membership.
           </p>
-        </>
+        </div>
       )}
     </div>
   );
