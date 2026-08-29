@@ -82,7 +82,7 @@ export function DashboardSidebar({ links, user }: DashboardSidebarProps) {
       </nav>
 
       {/* Desktop sidebar — unchanged, still a static left column */}
-      <aside className="border-guild-green/20 bg-surface z-50 hidden w-64 flex-col border-r md:static md:flex">
+      <aside className="border-guild-green/20 bg-surface z-50 hidden w-64 flex-col border-r md:sticky md:top-0 md:flex md:h-screen">
         <div className="border-guild-green/20 flex items-center gap-2 border-b px-5 py-4">
           <Image src="/logo.png" alt="" width={32} height={32} />
           <span className="font-display text-foreground text-sm font-bold tracking-wide uppercase">
