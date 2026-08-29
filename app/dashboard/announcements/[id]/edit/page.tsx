@@ -18,17 +18,18 @@ export default async function EditAnnouncementPage({
   const boundUpdateAction = updateAnnouncementAction.bind(null, announcement.id);
 
   return (
-    <main className="p-8">
-      <h1 className="font-display text-foreground text-2xl font-bold tracking-wide uppercase">
+    <main className="p-4 sm:p-8">
+      <h1 className="font-display text-foreground text-xl font-bold tracking-wide uppercase sm:text-2xl">
         Edit Announcement
       </h1>
-      <div className="mt-8">
+      <div className="mt-6 sm:mt-8">
         <AnnouncementForm
           action={boundUpdateAction}
           defaultValues={{
             title: announcement.title,
             body: announcement.body,
           }}
+          posterUrl={announcement.posterUrl}
           submitLabel="Save Changes"
         />
       </div>

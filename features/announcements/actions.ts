@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { announcementFormSchema } from '@/lib/validation/announcement';
 import { logActivity } from '@/lib/audit';
+import { validateAndUploadImage } from '@/lib/blob';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
@@ -46,10 +47,22 @@ export async function createAnnouncementAction(
     };
   }
 
+  // Poster is optional — only upload if a file was actually chosen.
+  let posterUrl: string | null = null;
+  const posterFile = formData.get('poster');
+  if (posterFile instanceof File && posterFile.size > 0) {
+    const result = await validateAndUploadImage(posterFile, 'announcement-posters');
+    if ('error' in result) {
+      return { message: result.error };
+    }
+    posterUrl = result.url;
+  }
+
   const announcement = await prisma.announcement.create({
     data: {
       title: parsed.data.title,
       body: parsed.data.body,
+      posterUrl,
       createdById: user.id,
     },
   });
@@ -93,11 +106,27 @@ export async function updateAnnouncementAction(
     return { message: 'This announcement no longer exists.' };
   }
 
+  // Poster handling: a new upload replaces the current poster; checking
+  // "Remove current poster" with no new file clears it; otherwise the
+  // existing poster (if any) is left untouched.
+  let posterUrl: string | null | undefined = undefined;
+  const posterFile = formData.get('poster');
+  if (posterFile instanceof File && posterFile.size > 0) {
+    const result = await validateAndUploadImage(posterFile, 'announcement-posters');
+    if ('error' in result) {
+      return { message: result.error };
+    }
+    posterUrl = result.url;
+  } else if (formData.get('removePoster') === 'on') {
+    posterUrl = null;
+  }
+
   const announcement = await prisma.announcement.update({
     where: { id },
     data: {
       title: parsed.data.title,
       body: parsed.data.body,
+      ...(posterUrl !== undefined ? { posterUrl } : {}),
     },
   });
 

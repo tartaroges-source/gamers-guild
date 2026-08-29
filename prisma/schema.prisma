@@ -112,6 +112,7 @@ model Announcement {
   id      String @id @default(cuid())
   title   String
   body    String
+  posterUrl String?
 
   createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
   createdById String?

@@ -172,15 +172,28 @@ export default async function HomePage() {
                 {latestNews.map((item) => (
                   <div
                     key={item.id}
-                    className={`hud-card glow-card rounded-lg border p-6 ${featuredEvent ? 'border-guild-green/20 bg-surface' : 'border-guild-green/20 bg-background'}`}
+                    className={`hud-card glow-card overflow-hidden rounded-lg border ${featuredEvent ? 'border-guild-green/20 bg-surface' : 'border-guild-green/20 bg-background'}`}
                   >
-                    <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
-                      {formatEventDate(item.createdAt)}
-                    </p>
-                    <h3 className="font-display text-foreground mt-2 text-lg font-bold tracking-wide uppercase">
-                      {item.title}
-                    </h3>
-                    <p className="text-muted mt-2 line-clamp-3 text-sm">{item.body}</p>
+                    {item.posterUrl && (
+                      <div className="relative h-40 w-full">
+                        <Image
+                          src={item.posterUrl}
+                          alt=""
+                          fill
+                          sizes="(max-width: 640px) 100vw, 512px"
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="p-6">
+                      <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
+                        {formatEventDate(item.createdAt)}
+                      </p>
+                      <h3 className="font-display text-foreground mt-2 text-lg font-bold tracking-wide uppercase">
+                        {item.title}
+                      </h3>
+                      <p className="text-muted mt-2 line-clamp-3 text-sm">{item.body}</p>
+                    </div>
                   </div>
                 ))}
               </div>

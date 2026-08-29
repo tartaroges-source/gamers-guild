@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getAnnouncementsForDashboard } from '@/features/announcements/queries';
 import { formatEventDate } from '@/lib/format';
 import { deleteAnnouncementAction } from '@/features/announcements/actions';
@@ -34,16 +35,27 @@ export default async function DashboardAnnouncementsPage() {
               key={announcement.id}
               className="border-guild-green/20 bg-surface flex flex-col justify-between gap-3 rounded-lg border p-4 sm:flex-row sm:items-center"
             >
-              <div className="min-w-0">
-                <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
-                  {formatEventDate(announcement.createdAt)}
-                </p>
-                <p className="font-display text-foreground mt-1 font-bold uppercase break-words">
-                  {announcement.title}
-                </p>
-                <p className="text-muted mt-0.5 text-xs">
-                  Posted by {announcement.createdBy?.name ?? 'Unknown'}
-                </p>
+              <div className="flex min-w-0 gap-3">
+                {announcement.posterUrl && (
+                  <Image
+                    src={announcement.posterUrl}
+                    alt=""
+                    width={64}
+                    height={64}
+                    className="h-16 w-16 flex-shrink-0 rounded-md object-cover"
+                  />
+                )}
+                <div className="min-w-0">
+                  <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
+                    {formatEventDate(announcement.createdAt)}
+                  </p>
+                  <p className="font-display text-foreground mt-1 font-bold uppercase break-words">
+                    {announcement.title}
+                  </p>
+                  <p className="text-muted mt-0.5 text-xs">
+                    Posted by {announcement.createdBy?.name ?? 'Unknown'}
+                  </p>
+                </div>
               </div>
               <div className="flex gap-2">
                 <Link
