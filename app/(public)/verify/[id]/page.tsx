@@ -26,7 +26,7 @@ export default async function VerifyMemberPage({ params }: { params: Promise<{ i
               alt={member.fullName}
               width={180}
               height={180}
-              className="border-guild-green h-44 w-44 rounded-full border-2 object-cover"
+              className="border-guild-green h-44 w-44 rounded-full border-2 object-cover object-top"
             />
           ) : (
             <Reticle className="text-guild-green h-24 w-24" />
