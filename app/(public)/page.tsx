@@ -9,6 +9,7 @@ import { getTeamMembers } from '@/features/team/queries';
 import { getFeaturedAlbum } from '@/features/albums/queries';
 import { formatEventDate } from '@/lib/format';
 import { RevealOnScroll } from '@/components/RevealOnScroll';
+import { AnnouncementGallery } from '@/components/AnnouncementGallery';
 
 const quickLinks = [
   { href: '/about', label: 'About the Guild', blurb: 'Our mission, values, and the people behind it.' },
@@ -168,34 +169,8 @@ export default async function HomePage() {
               <h2 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
                 Announcements
               </h2>
-              <div className="mt-6 grid gap-6 sm:grid-cols-2">
-                {latestNews.map((item) => (
-                  <div
-                    key={item.id}
-                    className={`hud-card glow-card overflow-hidden rounded-lg border ${featuredEvent ? 'border-guild-green/20 bg-surface' : 'border-guild-green/20 bg-background'}`}
-                  >
-                    {item.posterUrl && (
-                      <div className="relative h-40 w-full">
-                        <Image
-                          src={item.posterUrl}
-                          alt=""
-                          fill
-                          sizes="(max-width: 640px) 100vw, 512px"
-                          className="object-cover"
-                        />
-                      </div>
-                    )}
-                    <div className="p-6">
-                      <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
-                        {formatEventDate(item.createdAt)}
-                      </p>
-                      <h3 className="font-display text-foreground mt-2 text-lg font-bold tracking-wide uppercase">
-                        {item.title}
-                      </h3>
-                      <p className="text-muted mt-2 line-clamp-3 text-sm">{item.body}</p>
-                    </div>
-                  </div>
-                ))}
+              <div className="mt-6">
+                <AnnouncementGallery announcements={latestNews} variant="cards" />
               </div>
               <Link
                 href="/announcements"
