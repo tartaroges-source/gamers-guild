@@ -16,12 +16,12 @@ export default async function VerifyMemberPage({ params }: { params: Promise<{ i
             <Image
               src={member.application.idPictureUrl}
               alt={member.fullName}
-              width={120}
-              height={120}
-              className="border-guild-green h-28 w-28 rounded-full border-2 object-cover"
+              width={180}
+              height={180}
+              className="border-guild-green h-44 w-44 rounded-full border-2 object-cover"
             />
           ) : (
-            <Reticle className="text-guild-green h-16 w-16" />
+            <Reticle className="text-guild-green h-24 w-24" />
           )}
           <h1 className="font-display text-foreground mt-6 text-2xl font-bold tracking-wide uppercase">
             Verified Member
