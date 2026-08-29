@@ -53,26 +53,34 @@ export async function submitApplicationAction(
     const existingPending = await prisma.membershipApplication.findFirst({
       where: {
         status: 'PENDING',
-        OR: [{ email: parsed.data.email }, { studentId: parsed.data.studentId }],
+        OR: [
+          { email: parsed.data.email },
+          { studentId: parsed.data.studentId },
+          { fullName: { equals: parsed.data.fullName, mode: 'insensitive' } },
+        ],
       },
     });
 
     if (existingPending) {
       return {
         message:
-          'You already have a pending application under this email or student ID. Please wait for it to be reviewed before submitting again.',
+          'You already have a pending application under this name, email, or student ID. Please wait for it to be reviewed before submitting again.',
       };
     }
 
     const existingMember = await prisma.member.findFirst({
       where: {
-        OR: [{ email: parsed.data.email }, { studentId: parsed.data.studentId }],
+        OR: [
+          { email: parsed.data.email },
+          { studentId: parsed.data.studentId },
+          { fullName: { equals: parsed.data.fullName, mode: 'insensitive' } },
+        ],
       },
     });
 
     if (existingMember) {
       return {
-        message: 'This email or student ID is already registered to an existing member.',
+        message: 'This name, email, or student ID is already registered to an existing member.',
       };
     }
 
