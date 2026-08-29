@@ -38,7 +38,7 @@ const [members, baseUrl, courses] = await Promise.all([
           type="text"
           name="search"
           defaultValue={search ?? ''}
-          placeholder="Search by name, student ID, or course..."
+          placeholder="Search by name, student ID..."
           className="border-guild-green/30 bg-background text-foreground focus:border-guild-green focus:ring-guild-green min-w-[240px] flex-1 rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
         />
         <select
