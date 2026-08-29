@@ -47,36 +47,56 @@ export async function submitApplicationAction(
     };
   }
 
-  const idPictureFile = formData.get('idPicture');
-  if (!(idPictureFile instanceof File) || idPictureFile.size === 0) {
-    return { message: 'Please upload and crop your 2x2 ID picture.' };
-  }
+  try {
+    const existingPending = await prisma.membershipApplication.findFirst({
+      where: {
+        status: 'PENDING',
+        OR: [{ email: parsed.data.email }, { studentId: parsed.data.studentId }],
+      },
+    });
 
-  const idUploadResult = await validateAndUploadImage(idPictureFile, 'id-pictures');
-  if ('error' in idUploadResult) {
-    return { message: idUploadResult.error };
-  }
-
-  let paymentProofUrl: string | null = null;
-  if (parsed.data.paymentMethod === 'ONLINE') {
-    const proofFile = formData.get('paymentProof');
-    if (!(proofFile instanceof File) || proofFile.size === 0) {
-      return { message: 'Please upload a clear photo of your payment receipt.' };
+    if (existingPending) {
+      return {
+        message:
+          'You already have a pending application under this email or student ID. Please wait for it to be reviewed before submitting again.',
+      };
     }
-    const proofResult = await validateAndUploadImage(proofFile, 'payment-proofs');
-    if ('error' in proofResult) {
-      return { message: proofResult.error };
+
+    const idPictureFile = formData.get('idPicture');
+    if (!(idPictureFile instanceof File) || idPictureFile.size === 0) {
+      return { message: 'Please upload and crop your 2x2 ID picture.' };
     }
-    paymentProofUrl = proofResult.url;
+
+    const idUploadResult = await validateAndUploadImage(idPictureFile, 'id-pictures');
+    if ('error' in idUploadResult) {
+      return { message: idUploadResult.error };
+    }
+
+    let paymentProofUrl: string | null = null;
+    if (parsed.data.paymentMethod === 'ONLINE') {
+      const proofFile = formData.get('paymentProof');
+      if (!(proofFile instanceof File) || proofFile.size === 0) {
+        return { message: 'Please upload a clear photo of your payment receipt.' };
+      }
+      const proofResult = await validateAndUploadImage(proofFile, 'payment-proofs');
+      if ('error' in proofResult) {
+        return { message: proofResult.error };
+      }
+      paymentProofUrl = proofResult.url;
+    }
+
+    await prisma.membershipApplication.create({
+      data: { ...parsed.data, idPictureUrl: idUploadResult.url, paymentProofUrl },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Application submission failed:', error);
+    return {
+      message: 'Something went wrong submitting your application. Please try again in a moment.',
+    };
   }
-
-  await prisma.membershipApplication.create({
-    data: { ...parsed.data, idPictureUrl: idUploadResult.url, paymentProofUrl },
-  });
-
-  return { success: true };
 }
-
 export async function approveApplicationAction(id: string) {
   const user = await requireUser();
   if (!user) return;
