@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -15,124 +14,72 @@ type DashboardSidebarProps = {
 };
 
 export function DashboardSidebar({ links, user }: DashboardSidebarProps) {
-  const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-
-  useEffect(() => {
-    setIsOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen]);
 
   return (
     <>
-      {/* Mobile top bar */}
-      <div className="border-guild-green/30 bg-background/95 sticky top-0 z-40 flex items-center justify-between border-b px-4 py-3 backdrop-blur md:hidden">
+      {/* Mobile top bar — logo + profile/logout, no toggle needed anymore */}
+      <div className="border-guild-green/30 bg-background/95 sticky top-0 z-40 flex items-center justify-between border-b px-4 py-2.5 backdrop-blur md:hidden">
         <Link
           href="/dashboard"
           className="font-display text-foreground text-sm font-bold tracking-wide uppercase"
         >
           Gamers&apos; Guild
         </Link>
-        <button
-          type="button"
-          onClick={() => setIsOpen((v) => !v)}
-          aria-expanded={isOpen}
-          aria-label="Toggle menu"
-          className="border-guild-green/40 text-guild-green flex h-9 w-9 items-center justify-center rounded-md border"
-        >
-          {isOpen ? (
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="6" y1="6" x2="18" y2="18" />
-              <line x1="18" y1="6" x2="6" y2="18" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          )}
-        </button>
+
+        <div className="flex items-center gap-2">
+          <Link href="/dashboard/profile" className="flex items-center gap-2 hover:opacity-80">
+            {user.image ? (
+              <Image
+                src={user.image}
+                alt=""
+                width={28}
+                height={28}
+                className="h-7 w-7 rounded-full object-cover"
+              />
+            ) : (
+              <div className="bg-surface text-guild-green font-display flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold">
+                {user.name?.charAt(0) ?? '?'}
+              </div>
+            )}
+          </Link>
+          <form action={logoutAction}>
+            <ConfirmButton
+              confirmMessage="Sign out of your account?"
+              className="text-muted hover:text-guild-green text-[11px] font-semibold uppercase"
+            >
+              Sign Out
+            </ConfirmButton>
+          </form>
+        </div>
       </div>
 
-      {/* Mobile dropdown panel — sits below the top bar, full width */}
-      {isOpen && (
-        <div className="border-guild-green/20 bg-surface fixed inset-x-0 top-[57px] z-40 flex max-h-[calc(100vh-57px)] flex-col overflow-y-auto border-b md:hidden">
-          <nav className="flex flex-col px-3 py-3">
-            {links.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className={`font-display mb-1 flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-semibold tracking-widest uppercase transition-colors ${
-                    isActive
-                      ? 'bg-guild-green/15 text-guild-green'
-                      : 'text-muted hover:bg-background hover:text-guild-green'
-                  }`}
-                >
-                  {link.label}
-                  {!!link.badge && (
-                    <span className="bg-guild-gold text-background rounded-full px-1.5 py-0.5 text-[10px] font-bold">
-                      {link.badge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-
-          <div className="border-guild-green/20 border-t p-4">
+      {/* Mobile bottom tab bar — replaces the sidebar entirely on small screens */}
+      <nav
+        aria-label="Dashboard navigation"
+        className="border-guild-green/20 bg-surface fixed inset-x-0 bottom-0 z-40 flex overflow-x-auto border-t md:hidden"
+      >
+        {links.map((link) => {
+          const isActive = pathname === link.href;
+          return (
             <Link
-              href="/dashboard/profile"
-              onClick={() => setIsOpen(false)}
-              className="mb-3 flex items-center gap-3 hover:opacity-80"
+              key={link.href}
+              href={link.href}
+              className={`font-display relative flex min-w-[76px] flex-1 flex-col items-center justify-center gap-0.5 px-2 py-2.5 text-center text-[10px] font-semibold tracking-wide uppercase transition-colors ${
+                isActive ? 'text-guild-green' : 'text-muted'
+              }`}
             >
-              {user.image ? (
-                <Image
-                  src={user.image}
-                  alt=""
-                  width={36}
-                  height={36}
-                  className="h-9 w-9 rounded-full object-cover"
-                />
-              ) : (
-                <div className="bg-background text-guild-green font-display flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold">
-                  {user.name?.charAt(0) ?? '?'}
-                </div>
+              {!!link.badge && (
+                <span className="bg-guild-gold text-background absolute top-1 right-3 rounded-full px-1 py-0.5 text-[9px] font-bold leading-none">
+                  {link.badge}
+                </span>
               )}
-              <div className="min-w-0">
-                <p className="text-foreground truncate text-sm font-semibold">{user.name}</p>
-                <p className="text-muted text-xs">{user.role}</p>
-              </div>
+              <span className="leading-tight">{link.label}</span>
+              {isActive && <span className="bg-guild-green absolute inset-x-3 -bottom-px h-0.5 rounded-full" />}
             </Link>
-            <form action={logoutAction}>
-              <ConfirmButton
-                confirmMessage="Sign out of your account?"
-                className="border-guild-green/30 text-muted hover:bg-background w-full rounded-md border px-3 py-2 text-sm"
-              >
-                Sign Out
-              </ConfirmButton>
-            </form>
-          </div>
-        </div>
-      )}
+          );
+        })}
+      </nav>
 
       {/* Desktop sidebar — unchanged, still a static left column */}
       <aside className="border-guild-green/20 bg-surface z-50 hidden w-64 flex-col border-r md:static md:flex">
