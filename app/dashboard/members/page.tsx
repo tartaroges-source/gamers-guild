@@ -89,7 +89,8 @@ const [members, baseUrl, courses] = await Promise.all([
                   {member.fullName}
                 </p>
                 <p className="text-muted mt-0.5 text-xs">
-                  {member.studentId} &middot; {member.courseYear}
+                  {member.studentId} &middot; {member.department} &middot; {member.course} &middot;{' '}
+                  {member.yearLevel}
                 </p>
                 <p className="text-muted mt-0.5 text-xs">
                   Member since {formatEventDate(member.joinedAt)}

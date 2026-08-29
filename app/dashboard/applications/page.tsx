@@ -77,7 +77,8 @@ export default async function DashboardApplicationsPage() {
                     </p>
                     <p className="text-muted mt-1 text-sm break-words">
                       {application.email} &middot; {application.studentId} &middot;{' '}
-                      {application.courseYear}
+                      {application.department} &middot; {application.course} &middot;{' '}
+                      {application.yearLevel}
                     </p>
                     <p className="text-foreground mt-2 text-sm break-words">
                       <span className="text-muted">Plays:</span> {application.gamesPlayed}
