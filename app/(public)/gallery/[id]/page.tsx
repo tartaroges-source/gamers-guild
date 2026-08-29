@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { getAlbumById } from '@/features/albums/queries';
 import { formatEventDate } from '@/lib/format';
 import { AlbumLightbox } from '@/components/AlbumLightbox';
+import { RevealOnScroll } from '@/components/RevealOnScroll';
 
 export default async function AlbumDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -23,9 +24,11 @@ export default async function AlbumDetailPage({ params }: { params: Promise<{ id
       {album.images.length === 0 ? (
         <p className="text-muted mt-10">No photos in this album yet.</p>
       ) : (
-        <div className="mt-10">
-          <AlbumLightbox images={album.images} />
-        </div>
+        <RevealOnScroll direction="left">
+          <div className="mt-10">
+            <AlbumLightbox images={album.images} />
+          </div>
+        </RevealOnScroll>
       )}
     </div>
   );

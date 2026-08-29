@@ -1,5 +1,6 @@
 import { getAnnouncements } from '@/features/announcements/queries';
 import { AnnouncementGallery } from '@/components/AnnouncementGallery';
+import { RevealOnScroll } from '@/components/RevealOnScroll';
 
 export default async function AnnouncementsPage() {
   const announcements = await getAnnouncements();
@@ -14,7 +15,9 @@ export default async function AnnouncementsPage() {
       {announcements.length === 0 ? (
         <p className="text-muted mt-10">No announcements yet — check back soon.</p>
       ) : (
-        <AnnouncementGallery announcements={announcements} variant="list" />
+        <RevealOnScroll direction="left">
+          <AnnouncementGallery announcements={announcements} variant="list" />
+        </RevealOnScroll>
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { formatEventDate } from '@/lib/format';
 
@@ -19,6 +20,13 @@ type AnnouncementGalleryProps = {
 
 export function AnnouncementGallery({ announcements, variant }: AnnouncementGalleryProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Portals need document.body, which only exists on the client — this
+  // flag guards against trying to render one during server-side rendering.
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const close = useCallback(() => setActiveIndex(null), []);
   const showPrev = useCallback(() => {
@@ -47,6 +55,80 @@ export function AnnouncementGallery({ announcements, variant }: AnnouncementGall
   }, [activeIndex, close, showPrev, showNext]);
 
   const active = activeIndex !== null ? announcements[activeIndex] : null;
+
+  const modal = active && (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+      onClick={close}
+    >
+      <div
+        className="border-guild-green/20 bg-surface flex h-[75vh] w-[75vw] max-w-4xl flex-col overflow-hidden rounded-lg border max-sm:h-[90vh] max-sm:w-full"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="border-guild-green/20 flex flex-shrink-0 items-center justify-between border-b px-4 py-3">
+          <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
+            {formatEventDate(active.createdAt)}
+          </p>
+          <button
+            type="button"
+            onClick={close}
+            aria-label="Close"
+            className="text-muted hover:text-guild-green flex h-8 w-8 items-center justify-center rounded-md"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="6" y1="6" x2="18" y2="18" />
+              <line x1="18" y1="6" x2="6" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto">
+          {active.posterUrl && (
+            <div className="bg-background relative h-[45vh] w-full max-sm:h-64">
+              <Image src={active.posterUrl} alt="" fill sizes="75vw" className="object-contain" />
+            </div>
+          )}
+          <div className="p-5">
+            <h2 className="font-display text-foreground text-lg font-bold tracking-wide uppercase break-words sm:text-xl">
+              {active.title}
+            </h2>
+            <p className="text-muted mt-3 text-sm break-words whitespace-pre-line">{active.body}</p>
+          </div>
+        </div>
+
+        {/* Footer nav */}
+        {announcements.length > 1 && (
+          <div className="border-guild-green/20 flex flex-shrink-0 items-center justify-between border-t px-4 py-3">
+            <button
+              type="button"
+              onClick={showPrev}
+              className="border-guild-green/40 text-guild-green hover:bg-guild-green/10 flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Prev
+            </button>
+            <p className="text-muted font-mono text-xs tracking-widest">
+              {activeIndex !== null ? activeIndex + 1 : 0} / {announcements.length}
+            </p>
+            <button
+              type="button"
+              onClick={showNext}
+              className="border-guild-green/40 text-guild-green hover:bg-guild-green/10 flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm"
+            >
+              Next
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -117,79 +199,7 @@ export function AnnouncementGallery({ announcements, variant }: AnnouncementGall
         </ul>
       )}
 
-      {active && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
-          onClick={close}
-        >
-          <div
-            className="border-guild-green/20 bg-surface flex h-[75vh] w-[75vw] max-w-4xl flex-col overflow-hidden rounded-lg border max-sm:h-[90vh] max-sm:w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="border-guild-green/20 flex flex-shrink-0 items-center justify-between border-b px-4 py-3">
-              <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
-                {formatEventDate(active.createdAt)}
-              </p>
-              <button
-                type="button"
-                onClick={close}
-                aria-label="Close"
-                className="text-muted hover:text-guild-green flex h-8 w-8 items-center justify-center rounded-md"
-              >
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Scrollable body */}
-            <div className="flex-1 overflow-y-auto">
-              {active.posterUrl && (
-                <div className="bg-background relative h-[45vh] w-full max-sm:h-64">
-                  <Image src={active.posterUrl} alt="" fill sizes="75vw" className="object-contain" />
-                </div>
-              )}
-              <div className="p-5">
-                <h2 className="font-display text-foreground text-lg font-bold tracking-wide uppercase break-words sm:text-xl">
-                  {active.title}
-                </h2>
-                <p className="text-muted mt-3 text-sm break-words whitespace-pre-line">{active.body}</p>
-              </div>
-            </div>
-
-            {/* Footer nav */}
-            {announcements.length > 1 && (
-              <div className="border-guild-green/20 flex flex-shrink-0 items-center justify-between border-t px-4 py-3">
-                <button
-                  type="button"
-                  onClick={showPrev}
-                  className="border-guild-green/40 text-guild-green hover:bg-guild-green/10 flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm"
-                >
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>
-                  Prev
-                </button>
-                <p className="text-muted font-mono text-xs tracking-widest">
-                  {activeIndex !== null ? activeIndex + 1 : 0} / {announcements.length}
-                </p>
-                <button
-                  type="button"
-                  onClick={showNext}
-                  className="border-guild-green/40 text-guild-green hover:bg-guild-green/10 flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm"
-                >
-                  Next
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {mounted && modal ? createPortal(modal, document.body) : null}
     </>
   );
 }

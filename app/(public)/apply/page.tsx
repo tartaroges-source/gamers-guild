@@ -1,4 +1,5 @@
 import { ApplicationForm } from '@/components/ApplicationForm';
+import { RevealOnScroll } from '@/components/RevealOnScroll';
 
 export default function ApplyPage() {
   return (
@@ -9,9 +10,11 @@ export default function ApplyPage() {
       <p className="text-muted mt-2">
         Applications are reviewed by our officers — we&apos;ll be in touch soon.
       </p>
-      <div className="mt-10">
-        <ApplicationForm />
-      </div>
+      <RevealOnScroll direction="left">
+        <div className="mt-10">
+          <ApplicationForm />
+        </div>
+      </RevealOnScroll>
     </div>
   );
 }
