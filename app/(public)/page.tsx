@@ -49,13 +49,16 @@ export default async function HomePage() {
         ) : (
           <Reticle className="animate-drift text-guild-green/[0.06] pointer-events-none absolute top-1/2 right-[-120px] h-[520px] w-[520px] -translate-y-1/2" />
         )}
-        <div className="from-background via-background/80 to-background/40 absolute inset-0 bg-gradient-to-t" />
+        <div className="from-background via-background/85 to-background/50 absolute inset-0 bg-gradient-to-t" />
 
         <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
           <p className="text-guild-gold font-mono text-sm tracking-widest uppercase">
             {settings.clubName} &middot; Est. PNC
           </p>
-          <h1 className="font-display text-foreground mt-4 max-w-2xl text-5xl font-bold tracking-tight uppercase sm:text-6xl">
+          <h1
+            className="font-display text-foreground mt-4 max-w-2xl text-6xl font-bold tracking-tight uppercase sm:text-7xl"
+            style={{ textShadow: '0 4px 40px rgba(31, 174, 89, 0.35)' }}
+          >
             Play with purpose.
           </h1>
           {hero.heroTagline && (
@@ -64,13 +67,13 @@ export default async function HomePage() {
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
               href="/apply"
-              className="bg-guild-green font-display text-background hover:bg-guild-green-dim rounded-md px-6 py-3 text-sm font-bold tracking-wide uppercase transition-colors"
+              className="btn-glossy font-display text-background rounded-md px-7 py-3.5 text-sm font-bold tracking-wide uppercase"
             >
               Join Now
             </Link>
             <Link
               href="/events"
-              className="border-guild-gold/60 font-display text-guild-gold hover:bg-guild-gold/10 rounded-md border px-6 py-3 text-sm font-bold tracking-wide uppercase transition-colors"
+              className="border-guild-gold/60 font-display text-guild-gold hover:bg-guild-gold/10 rounded-md border px-7 py-3.5 text-sm font-bold tracking-wide uppercase transition-colors"
             >
               View Events
             </Link>
@@ -88,7 +91,7 @@ export default async function HomePage() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="hud-card border-guild-green/20 bg-surface hover:border-guild-green/50 rounded-lg border p-5 transition-colors"
+                className="hud-card glow-card border-guild-green/20 bg-surface rounded-lg border p-5"
               >
                 <p className="font-display text-foreground text-base font-bold tracking-wide uppercase">
                   {link.label}
@@ -100,7 +103,7 @@ export default async function HomePage() {
         </section>
       </RevealOnScroll>
 
-      {/* Featured Event */}
+      {/* Featured Event — full-bleed key art panel */}
       {featuredEvent && (
         <RevealOnScroll>
           <section className="border-guild-green/20 bg-surface border-t">
@@ -109,27 +112,40 @@ export default async function HomePage() {
               <h2 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
                 What&apos;s Coming Up
               </h2>
-              <div className="hud-card border-guild-green/20 bg-background mt-6 overflow-hidden rounded-lg border sm:flex">
-                {featuredEvent.media[0] && (
-                  <div className="relative h-48 w-full flex-shrink-0 sm:h-auto sm:w-64">
-                    {featuredEvent.media[0].type === 'VIDEO' ? (
-                      <video src={featuredEvent.media[0].url} className="h-full w-full object-cover" />
-                    ) : (
-                      <Image src={featuredEvent.media[0].url} alt="" fill sizes="256px" className="object-cover" />
-                    )}
-                  </div>
+              <div className="glow-card border-guild-green/20 relative mt-6 h-80 overflow-hidden rounded-lg border sm:h-[420px]">
+                {featuredEvent.media[0] ? (
+                  featuredEvent.media[0].type === 'VIDEO' ? (
+                    <video
+                      src={featuredEvent.media[0].url}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Image
+                      src={featuredEvent.media[0].url}
+                      alt=""
+                      fill
+                      sizes="(max-width: 640px) 100vw, 1024px"
+                      className="object-cover"
+                    />
+                  )
+                ) : (
+                  <div className="bg-background absolute inset-0" />
                 )}
-                <div className="p-6">
+                <div className="from-background via-background/40 absolute inset-0 bg-gradient-to-t to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
                   <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
                     {formatEventDate(featuredEvent.startsAt)}
                   </p>
-                  <h3 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
+                  <h3 className="font-display text-foreground mt-2 text-3xl font-bold tracking-wide uppercase">
                     {featuredEvent.title}
                   </h3>
                   {featuredEvent.location && (
                     <p className="text-muted mt-1 text-sm">{featuredEvent.location}</p>
                   )}
-                  <p className="text-muted mt-3 text-sm">{featuredEvent.description}</p>
                   <Link
                     href={`/events/${featuredEvent.id}`}
                     className="font-display text-guild-green mt-4 inline-block text-sm font-bold tracking-wide uppercase hover:underline"
@@ -156,7 +172,7 @@ export default async function HomePage() {
                 {latestNews.map((item) => (
                   <div
                     key={item.id}
-                    className={`hud-card rounded-lg border p-6 ${featuredEvent ? 'border-guild-green/20 bg-surface' : 'border-guild-green/20 bg-background'}`}
+                    className={`hud-card glow-card rounded-lg border p-6 ${featuredEvent ? 'border-guild-green/20 bg-surface' : 'border-guild-green/20 bg-background'}`}
                   >
                     <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
                       {formatEventDate(item.createdAt)}
@@ -191,7 +207,7 @@ export default async function HomePage() {
               {officerHighlights.map((member) => (
                 <div
                   key={member.id}
-                  className="hud-card border-guild-green/20 bg-surface rounded-lg border p-6 text-center transition-transform hover:-translate-y-1"
+                  className="glow-card border-guild-green/20 bg-surface rounded-lg border p-6 text-center"
                 >
                   {member.photoUrl ? (
                     <Image
@@ -223,7 +239,7 @@ export default async function HomePage() {
         </RevealOnScroll>
       )}
 
-      {/* Gallery Preview */}
+      {/* Gallery Preview — poster-style key art panel */}
       {featuredAlbum && featuredAlbum.coverImage && (
         <RevealOnScroll>
           <section className="border-guild-green/20 bg-surface border-t">
@@ -234,26 +250,24 @@ export default async function HomePage() {
               </h2>
               <Link
                 href={`/gallery/${featuredAlbum.id}`}
-                className="hud-card border-guild-green/20 mt-6 block overflow-hidden rounded-lg border"
+                className="glow-card border-guild-green/20 relative mt-6 block h-72 overflow-hidden rounded-lg border sm:h-[420px]"
               >
-                <div className="relative h-64 w-full sm:h-80">
-                  <Image
-                    src={featuredAlbum.coverImage.url}
-                    alt={featuredAlbum.title}
-                    fill
-                    sizes="(max-width: 640px) 100vw, 1024px"
-                    className="object-cover transition-transform hover:scale-105"
-                  />
+                <Image
+                  src={featuredAlbum.coverImage.url}
+                  alt={featuredAlbum.title}
+                  fill
+                  sizes="(max-width: 640px) 100vw, 1024px"
+                  className="object-cover"
+                />
+                <div className="from-background via-background/30 absolute inset-0 bg-gradient-to-t to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+                  <p className="font-display text-foreground text-2xl font-bold tracking-wide uppercase">
+                    {featuredAlbum.title}
+                  </p>
+                  <span className="font-display text-guild-green mt-2 inline-block text-sm font-bold tracking-wide uppercase hover:underline">
+                    View Full Gallery &rarr;
+                  </span>
                 </div>
-              </Link>
-              <p className="font-display text-foreground mt-4 text-lg font-bold tracking-wide uppercase">
-                {featuredAlbum.title}
-              </p>
-              <Link
-                href="/gallery"
-                className="font-display text-guild-green mt-2 inline-block text-sm font-bold tracking-wide uppercase hover:underline"
-              >
-                View Full Gallery &rarr;
               </Link>
             </div>
           </section>
@@ -272,7 +286,7 @@ export default async function HomePage() {
             </div>
             <Link
               href="/apply"
-              className="bg-guild-green font-display text-background hover:bg-guild-green-dim rounded-md px-6 py-3 text-sm font-bold tracking-wide whitespace-nowrap uppercase transition-colors"
+              className="btn-glossy font-display text-background rounded-md px-7 py-3.5 text-sm font-bold tracking-wide whitespace-nowrap uppercase"
             >
               Apply Now
             </Link>

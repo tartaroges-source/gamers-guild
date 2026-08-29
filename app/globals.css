@@ -110,3 +110,35 @@ select:focus-visible,
 .hud-card:focus-within::after {
   opacity: 1;
 }
+
+
+/* Glossy, glowing CTA button — replaces flat fills for a premium,
+   AAA-game-marketing feel while staying in the guild-green palette. */
+.btn-glossy {
+  background: linear-gradient(135deg, var(--guild-green), var(--guild-green-dim));
+  box-shadow:
+    0 8px 24px -8px rgba(31, 174, 89, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.btn-glossy:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 14px 32px -8px rgba(31, 174, 89, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Soft glow used on cards for a more premium hover state than a flat border. */
+.glow-card {
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+.glow-card:hover {
+  box-shadow: 0 0 0 1px rgba(31, 174, 89, 0.4), 0 20px 40px -16px rgba(31, 174, 89, 0.35);
+  transform: translateY(-3px);
+}
