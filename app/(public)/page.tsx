@@ -38,8 +38,9 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero */}
-      <section className="border-guild-green/20 relative flex min-h-[85vh] items-center overflow-hidden border-b">
+      {/* Hero — all text bottom-aligned, with a strong scrim so it stays
+          readable regardless of how bright or busy the background image is. */}
+      <section className="border-guild-green/20 relative flex min-h-[85vh] items-end overflow-hidden border-b">
         {hero.heroMediaType === 'VIDEO' && hero.heroVideoUrl ? (
           <video
             autoPlay
@@ -54,15 +55,20 @@ export default async function HomePage() {
         ) : (
           <Reticle className="animate-drift text-guild-green/[0.06] pointer-events-none absolute top-1/2 right-[-120px] h-[520px] w-[520px] -translate-y-1/2" />
         )}
-        <div className="from-background via-background/45 to-transparent absolute inset-0 bg-gradient-to-t" />
+        {/* Base scrim — darkens the whole image slightly so nothing is ever
+            pure, blown-out brightness behind the text. */}
+        <div className="bg-background/25 absolute inset-0" />
+        {/* Bottom scrim — strong, deliberately taller than the text block,
+            guarantees contrast no matter what colors sit behind it. */}
+        <div className="from-background via-background/85 absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t to-transparent" />
 
-        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+        <div className="relative mx-auto w-full max-w-6xl px-4 pt-24 pb-10 sm:px-6 sm:pb-14">
           <p className="text-guild-gold font-mono text-sm tracking-widest uppercase">
             {settings.clubName} &middot; Est. PNC
           </p>
           <h1
             className="font-display text-foreground mt-4 max-w-2xl text-6xl font-bold tracking-tight uppercase sm:text-7xl"
-            style={{ textShadow: '0 4px 40px rgba(31, 174, 89, 0.35)' }}
+            style={{ textShadow: '0 4px 40px rgba(0, 0, 0, 0.6)' }}
           >
             Play with purpose.
           </h1>
