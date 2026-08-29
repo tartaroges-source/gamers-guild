@@ -57,7 +57,7 @@ export function DashboardSidebar({ links, user }: DashboardSidebarProps) {
       {/* Mobile bottom tab bar — replaces the sidebar entirely on small screens */}
       <nav
         aria-label="Dashboard navigation"
-        className="border-guild-green/20 bg-surface fixed inset-x-0 bottom-0 z-40 flex overflow-x-auto border-t md:hidden"
+        className="border-guild-green/20 bg-surface fixed inset-x-0 bottom-0 z-40 flex overflow-x-auto border-t pb-[env(safe-area-inset-bottom)] md:hidden"
       >
         {links.map((link) => {
           const isActive = pathname === link.href;
@@ -65,12 +65,12 @@ export function DashboardSidebar({ links, user }: DashboardSidebarProps) {
             <Link
               key={link.href}
               href={link.href}
-              className={`font-display relative flex min-w-[76px] flex-1 flex-col items-center justify-center gap-0.5 px-2 py-2.5 text-center text-[10px] font-semibold tracking-wide uppercase transition-colors ${
+              className={`font-display relative flex min-h-[60px] min-w-[80px] flex-1 flex-col items-center justify-center gap-1 px-2 py-3 text-center text-[11px] font-semibold tracking-wide uppercase transition-colors active:bg-background ${
                 isActive ? 'text-guild-green' : 'text-muted'
               }`}
             >
               {!!link.badge && (
-                <span className="bg-guild-gold text-background absolute top-1 right-3 rounded-full px-1 py-0.5 text-[9px] font-bold leading-none">
+                <span className="bg-guild-gold text-background absolute top-1.5 right-3 rounded-full px-1 py-0.5 text-[9px] font-bold leading-none">
                   {link.badge}
                 </span>
               )}
