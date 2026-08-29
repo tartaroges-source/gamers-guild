@@ -74,7 +74,7 @@ export function IdPictureUpload() {
               zoom={zoom}
               rotation={0}
               aspect={1}
-              cropShape="rect"
+              cropShape="round"
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={onCropComplete}
