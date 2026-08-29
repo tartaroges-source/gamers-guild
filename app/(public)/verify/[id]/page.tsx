@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { getMemberById } from '@/features/members/queries';
 import { formatEventDate } from '@/lib/format';
 import { Reticle } from '@/components/Reticle';
@@ -9,10 +10,19 @@ export default async function VerifyMemberPage({ params }: { params: Promise<{ i
 
   return (
     <div className="mx-auto flex max-w-md flex-col items-center px-4 py-24 text-center sm:px-6">
-      <Reticle className={`h-16 w-16 ${isValid ? 'text-guild-green' : 'text-red-400'}`} />
-
       {isValid && member ? (
         <>
+          {member.application?.idPictureUrl ? (
+            <Image
+              src={member.application.idPictureUrl}
+              alt={member.fullName}
+              width={120}
+              height={120}
+              className="border-guild-green h-28 w-28 rounded-full border-2 object-cover"
+            />
+          ) : (
+            <Reticle className="text-guild-green h-16 w-16" />
+          )}
           <h1 className="font-display text-foreground mt-6 text-2xl font-bold tracking-wide uppercase">
             Verified Member
           </h1>
@@ -21,6 +31,7 @@ export default async function VerifyMemberPage({ params }: { params: Promise<{ i
         </>
       ) : (
         <>
+          <Reticle className="h-16 w-16 text-red-400" />
           <h1 className="font-display text-foreground mt-6 text-2xl font-bold tracking-wide uppercase">
             Not a Valid Member
           </h1>

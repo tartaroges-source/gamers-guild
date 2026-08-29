@@ -32,5 +32,8 @@ export async function getDistinctCourses() {
 }
 
 export async function getMemberById(id: string) {
-  return prisma.member.findUnique({ where: { id } });
+  return prisma.member.findUnique({
+    where: { id },
+    include: { application: { select: { idPictureUrl: true } } },
+  });
 }
