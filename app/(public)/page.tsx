@@ -10,6 +10,13 @@ import { getFeaturedAlbum } from '@/features/albums/queries';
 import { formatEventDate } from '@/lib/format';
 import { RevealOnScroll } from '@/components/RevealOnScroll';
 
+const quickLinks = [
+  { href: '/about', label: 'About the Guild', blurb: 'Our mission, values, and the people behind it.' },
+  { href: '/events', label: 'Events', blurb: 'Tournaments, meetups, and what\u2019s coming up.' },
+  { href: '/gallery', label: 'Gallery', blurb: 'Photos and highlights from past events.' },
+  { href: '/apply', label: 'Join the Guild', blurb: 'Applications are open year-round.' },
+];
+
 export default async function HomePage() {
   const [settings, hero, featuredEvent, announcements, teamMembers, featuredAlbum] =
     await Promise.all([
@@ -71,40 +78,65 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Quick Access — always renders, so the page never feels empty
+          even when Featured Event / Latest News have nothing to show. */}
+      <RevealOnScroll>
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <p className="text-guild-green font-mono text-xs tracking-widest uppercase">// Explore</p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {quickLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="hud-card border-guild-green/20 bg-surface hover:border-guild-green/50 rounded-lg border p-5 transition-colors"
+              >
+                <p className="font-display text-foreground text-base font-bold tracking-wide uppercase">
+                  {link.label}
+                </p>
+                <p className="text-muted mt-2 text-sm">{link.blurb}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      </RevealOnScroll>
+
       {/* Featured Event */}
       {featuredEvent && (
         <RevealOnScroll>
-          <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-            <h2 className="font-display text-foreground text-2xl font-bold tracking-wide uppercase">
-              Featured Event
-            </h2>
-            <div className="border-guild-green/20 bg-surface mt-6 overflow-hidden rounded-lg border sm:flex">
-              {featuredEvent.media[0] && (
-                <div className="relative h-48 w-full flex-shrink-0 sm:h-auto sm:w-64">
-                  {featuredEvent.media[0].type === 'VIDEO' ? (
-                    <video src={featuredEvent.media[0].url} className="h-full w-full object-cover" />
-                  ) : (
-                    <Image src={featuredEvent.media[0].url} alt="" fill sizes="256px" className="object-cover" />
-                  )}
-                </div>
-              )}
-              <div className="p-6">
-                <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
-                  {formatEventDate(featuredEvent.startsAt)}
-                </p>
-                <h3 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
-                  {featuredEvent.title}
-                </h3>
-                {featuredEvent.location && (
-                  <p className="text-muted mt-1 text-sm">{featuredEvent.location}</p>
+          <section className="border-guild-green/20 bg-surface border-t">
+            <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+              <p className="text-guild-green font-mono text-xs tracking-widest uppercase">// Featured Event</p>
+              <h2 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
+                What&apos;s Coming Up
+              </h2>
+              <div className="hud-card border-guild-green/20 bg-background mt-6 overflow-hidden rounded-lg border sm:flex">
+                {featuredEvent.media[0] && (
+                  <div className="relative h-48 w-full flex-shrink-0 sm:h-auto sm:w-64">
+                    {featuredEvent.media[0].type === 'VIDEO' ? (
+                      <video src={featuredEvent.media[0].url} className="h-full w-full object-cover" />
+                    ) : (
+                      <Image src={featuredEvent.media[0].url} alt="" fill sizes="256px" className="object-cover" />
+                    )}
+                  </div>
                 )}
-                <p className="text-muted mt-3 text-sm">{featuredEvent.description}</p>
-                <Link
-                  href={`/events/${featuredEvent.id}`}
-                  className="font-display text-guild-green mt-4 inline-block text-sm font-bold tracking-wide uppercase hover:underline"
-                >
-                  View Event &rarr;
-                </Link>
+                <div className="p-6">
+                  <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
+                    {formatEventDate(featuredEvent.startsAt)}
+                  </p>
+                  <h3 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
+                    {featuredEvent.title}
+                  </h3>
+                  {featuredEvent.location && (
+                    <p className="text-muted mt-1 text-sm">{featuredEvent.location}</p>
+                  )}
+                  <p className="text-muted mt-3 text-sm">{featuredEvent.description}</p>
+                  <Link
+                    href={`/events/${featuredEvent.id}`}
+                    className="font-display text-guild-green mt-4 inline-block text-sm font-bold tracking-wide uppercase hover:underline"
+                  >
+                    View Event &rarr;
+                  </Link>
+                </div>
               </div>
             </div>
           </section>
@@ -114,16 +146,17 @@ export default async function HomePage() {
       {/* Latest News */}
       {latestNews.length > 0 && (
         <RevealOnScroll>
-          <section className="border-guild-green/20 bg-surface border-t">
+          <section className={`border-guild-green/20 border-t ${featuredEvent ? '' : 'bg-surface'}`}>
             <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-              <h2 className="font-display text-foreground text-2xl font-bold tracking-wide uppercase">
-                Latest News
+              <p className="text-guild-green font-mono text-xs tracking-widest uppercase">// Latest News</p>
+              <h2 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
+                Announcements
               </h2>
               <div className="mt-6 grid gap-6 sm:grid-cols-2">
                 {latestNews.map((item) => (
                   <div
                     key={item.id}
-                    className="border-guild-green/20 bg-background rounded-lg border p-6"
+                    className={`hud-card rounded-lg border p-6 ${featuredEvent ? 'border-guild-green/20 bg-surface' : 'border-guild-green/20 bg-background'}`}
                   >
                     <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
                       {formatEventDate(item.createdAt)}
@@ -150,14 +183,15 @@ export default async function HomePage() {
       {officerHighlights.length > 0 && (
         <RevealOnScroll>
           <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-            <h2 className="font-display text-foreground text-2xl font-bold tracking-wide uppercase">
-              Officer Highlights
+            <p className="text-guild-green font-mono text-xs tracking-widest uppercase">// Officer Highlights</p>
+            <h2 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
+              Meet the Officers
             </h2>
             <div className="mt-6 grid gap-6 sm:grid-cols-3">
               {officerHighlights.map((member) => (
                 <div
                   key={member.id}
-                  className="border-guild-green/20 bg-surface rounded-lg border p-6 text-center transition-transform hover:-translate-y-1"
+                  className="hud-card border-guild-green/20 bg-surface rounded-lg border p-6 text-center transition-transform hover:-translate-y-1"
                 >
                   {member.photoUrl ? (
                     <Image
@@ -194,12 +228,13 @@ export default async function HomePage() {
         <RevealOnScroll>
           <section className="border-guild-green/20 bg-surface border-t">
             <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-              <h2 className="font-display text-foreground text-2xl font-bold tracking-wide uppercase">
+              <p className="text-guild-green font-mono text-xs tracking-widest uppercase">// Gallery</p>
+              <h2 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
                 Gallery Preview
               </h2>
               <Link
                 href={`/gallery/${featuredAlbum.id}`}
-                className="border-guild-green/20 mt-6 block overflow-hidden rounded-lg border"
+                className="hud-card border-guild-green/20 mt-6 block overflow-hidden rounded-lg border"
               >
                 <div className="relative h-64 w-full sm:h-80">
                   <Image

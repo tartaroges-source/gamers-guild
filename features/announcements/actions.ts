@@ -14,9 +14,6 @@ export type AnnouncementActionState =
     }
   | undefined;
 
-// Both ADMIN and OFFICER can create, edit, and delete announcements — the
-// distinction isn't a permission block, it's that every action gets
-// written to the audit log, so deletions in particular stay traceable.
 async function requireUser() {
   const session = await auth();
   if (!session?.user) {
@@ -67,6 +64,7 @@ export async function createAnnouncementAction(
     newData: { title: announcement.title, body: announcement.body },
   });
 
+  revalidatePath('/');
   revalidatePath('/announcements');
   revalidatePath('/dashboard/announcements');
   redirect('/dashboard/announcements');
@@ -90,9 +88,6 @@ export async function updateAnnouncementAction(
     };
   }
 
-  // Fetch the current state BEFORE overwriting it — this is the "before"
-  // half of the audit log entry. Without this, the old values would
-  // already be gone by the time we tried to log them.
   const existing = await prisma.announcement.findUnique({ where: { id } });
   if (!existing) {
     return { message: 'This announcement no longer exists.' };
@@ -117,6 +112,7 @@ export async function updateAnnouncementAction(
     newData: { title: announcement.title, body: announcement.body },
   });
 
+  revalidatePath('/');
   revalidatePath('/announcements');
   revalidatePath('/dashboard/announcements');
   redirect('/dashboard/announcements');
@@ -128,8 +124,6 @@ export async function deleteAnnouncementAction(id: string) {
     return;
   }
 
-  // Prisma's delete() returns the row as it was right before deletion —
-  // that's exactly the "before" snapshot we want for the log.
   const announcement = await prisma.announcement.delete({ where: { id } });
 
   await logActivity({
@@ -142,6 +136,7 @@ export async function deleteAnnouncementAction(id: string) {
     previousData: { title: announcement.title, body: announcement.body },
   });
 
+  revalidatePath('/');
   revalidatePath('/announcements');
   revalidatePath('/dashboard/announcements');
 }

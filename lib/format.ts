@@ -6,6 +6,7 @@ export function formatEventDate(date: Date) {
     year: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
+    timeZone: 'Asia/Manila',
   }).format(date);
 }
 

@@ -71,3 +71,42 @@ select:focus-visible,
   animation: drift 14s ease-in-out infinite;
 }
 
+
+/* Targeting-reticle corner brackets — signature hover treatment for cards,
+   echoing the crest/reticle motif used in the hero. */
+.hud-card {
+  position: relative;
+}
+
+.hud-card::before,
+.hud-card::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--guild-green);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.hud-card::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+.hud-card::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+.hud-card:hover::before,
+.hud-card:hover::after,
+.hud-card:focus-within::before,
+.hud-card:focus-within::after {
+  opacity: 1;
+}
