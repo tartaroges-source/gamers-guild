@@ -51,7 +51,7 @@ export function AnnouncementGallery({ announcements, variant }: AnnouncementGall
   return (
     <>
       {variant === 'cards' ? (
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
           {announcements.map((item, index) => (
             <button
               key={item.id}
@@ -60,7 +60,7 @@ export function AnnouncementGallery({ announcements, variant }: AnnouncementGall
               className="hud-card glow-card border-guild-green/20 bg-surface overflow-hidden rounded-lg border text-left"
             >
               {item.posterUrl && (
-                <div className="bg-background relative h-40 w-full">
+                <div className="bg-background relative h-52 w-full sm:h-64">
                   <Image
                     src={item.posterUrl}
                     alt=""
@@ -70,11 +70,11 @@ export function AnnouncementGallery({ announcements, variant }: AnnouncementGall
                   />
                 </div>
               )}
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
                   {formatEventDate(item.createdAt)}
                 </p>
-                <h3 className="font-display text-foreground mt-2 text-lg font-bold tracking-wide uppercase">
+                <h3 className="font-display text-foreground mt-2 text-base font-bold tracking-wide uppercase sm:text-lg">
                   {item.title}
                 </h3>
                 <p className="text-muted mt-2 line-clamp-3 text-sm">{item.body}</p>
@@ -83,7 +83,7 @@ export function AnnouncementGallery({ announcements, variant }: AnnouncementGall
           ))}
         </div>
       ) : (
-        <ul className="mt-10 flex flex-col gap-6">
+        <ul className="mt-8 flex flex-col gap-4 sm:mt-10 sm:gap-6">
           {announcements.map((item, index) => (
             <li key={item.id}>
               <button
@@ -92,7 +92,7 @@ export function AnnouncementGallery({ announcements, variant }: AnnouncementGall
                 className="border-guild-green/20 bg-surface block w-full overflow-hidden rounded-lg border text-left"
               >
                 {item.posterUrl && (
-                  <div className="bg-background relative h-56 w-full sm:h-72">
+                  <div className="bg-background relative h-64 w-full sm:h-80">
                     <Image
                       src={item.posterUrl}
                       alt=""
@@ -102,14 +102,14 @@ export function AnnouncementGallery({ announcements, variant }: AnnouncementGall
                     />
                   </div>
                 )}
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
                     {formatEventDate(item.createdAt)}
                   </p>
-                  <h2 className="font-display text-foreground mt-1 text-xl font-bold tracking-wide uppercase">
+                  <h2 className="font-display text-foreground mt-1 text-lg font-bold tracking-wide uppercase sm:text-xl">
                     {item.title}
                   </h2>
-                  <p className="text-muted mt-3 text-sm whitespace-pre-line">{item.body}</p>
+                  <p className="text-muted mt-3 text-sm break-words whitespace-pre-line">{item.body}</p>
                 </div>
               </button>
             </li>
@@ -119,70 +119,74 @@ export function AnnouncementGallery({ announcements, variant }: AnnouncementGall
 
       {active && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-6"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
           onClick={close}
         >
-          <button
-            type="button"
-            onClick={close}
-            aria-label="Close"
-            className="text-foreground hover:text-guild-green absolute top-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/40"
-          >
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="6" y1="6" x2="18" y2="18" />
-              <line x1="18" y1="6" x2="6" y2="18" />
-            </svg>
-          </button>
-
-          {announcements.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  showPrev();
-                }}
-                aria-label="Previous announcement"
-                className="text-foreground hover:text-guild-green absolute left-2 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 sm:left-4"
-              >
-                <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  showNext();
-                }}
-                aria-label="Next announcement"
-                className="text-foreground hover:text-guild-green absolute right-2 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 sm:right-4"
-              >
-                <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </button>
-            </>
-          )}
-
           <div
-            className="border-guild-green/20 bg-surface flex h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-lg border sm:flex-row"
+            className="border-guild-green/20 bg-surface flex h-[75vh] w-[75vw] max-w-4xl flex-col overflow-hidden rounded-lg border max-sm:h-[90vh] max-sm:w-full"
             onClick={(e) => e.stopPropagation()}
           >
-            {active.posterUrl && (
-              <div className="bg-background relative min-h-[240px] w-full flex-1 sm:min-h-0">
-                <Image src={active.posterUrl} alt="" fill sizes="90vw" className="object-contain" />
-              </div>
-            )}
-            <div className="w-full flex-shrink-0 overflow-y-auto p-6 sm:w-80">
+            {/* Header */}
+            <div className="border-guild-green/20 flex flex-shrink-0 items-center justify-between border-b px-4 py-3">
               <p className="text-guild-gold font-mono text-xs tracking-widest uppercase">
                 {formatEventDate(active.createdAt)}
               </p>
-              <h2 className="font-display text-foreground mt-2 text-xl font-bold tracking-wide uppercase">
-                {active.title}
-              </h2>
-              <p className="text-muted mt-3 text-sm whitespace-pre-line">{active.body}</p>
+              <button
+                type="button"
+                onClick={close}
+                aria-label="Close"
+                className="text-muted hover:text-guild-green flex h-8 w-8 items-center justify-center rounded-md"
+              >
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                </svg>
+              </button>
             </div>
+
+            {/* Scrollable body */}
+            <div className="flex-1 overflow-y-auto">
+              {active.posterUrl && (
+                <div className="bg-background relative h-[45vh] w-full max-sm:h-64">
+                  <Image src={active.posterUrl} alt="" fill sizes="75vw" className="object-contain" />
+                </div>
+              )}
+              <div className="p-5">
+                <h2 className="font-display text-foreground text-lg font-bold tracking-wide uppercase break-words sm:text-xl">
+                  {active.title}
+                </h2>
+                <p className="text-muted mt-3 text-sm break-words whitespace-pre-line">{active.body}</p>
+              </div>
+            </div>
+
+            {/* Footer nav */}
+            {announcements.length > 1 && (
+              <div className="border-guild-green/20 flex flex-shrink-0 items-center justify-between border-t px-4 py-3">
+                <button
+                  type="button"
+                  onClick={showPrev}
+                  className="border-guild-green/40 text-guild-green hover:bg-guild-green/10 flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm"
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                  Prev
+                </button>
+                <p className="text-muted font-mono text-xs tracking-widest">
+                  {activeIndex !== null ? activeIndex + 1 : 0} / {announcements.length}
+                </p>
+                <button
+                  type="button"
+                  onClick={showNext}
+                  className="border-guild-green/40 text-guild-green hover:bg-guild-green/10 flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm"
+                >
+                  Next
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

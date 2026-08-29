@@ -29,10 +29,13 @@ export async function getFeaturedAlbum() {
   });
 }
 
-export async function getOtherAlbums(excludeId?: string) {
+// `take` is optional — the Gallery page wants every other album, while
+// the homepage preview only wants the first few underneath the featured one.
+export async function getOtherAlbums(excludeId?: string, take?: number) {
   return prisma.album.findMany({
     where: excludeId ? { id: { not: excludeId } } : undefined,
     orderBy: [{ eventDate: 'desc' }, { createdAt: 'desc' }],
     include: { coverImage: true, images: { select: { id: true } } },
+    take,
   });
 }

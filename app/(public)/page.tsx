@@ -6,7 +6,7 @@ import { getHomepageContent } from '@/features/homepage/queries';
 import { getFeaturedEventForHomepage } from '@/features/events/queries';
 import { getAnnouncements } from '@/features/announcements/queries';
 import { getTeamMembers } from '@/features/team/queries';
-import { getFeaturedAlbum } from '@/features/albums/queries';
+import { getFeaturedAlbum, getOtherAlbums } from '@/features/albums/queries';
 import { formatEventDate } from '@/lib/format';
 import { RevealOnScroll } from '@/components/RevealOnScroll';
 import { AnnouncementGallery } from '@/components/AnnouncementGallery';
@@ -28,6 +28,8 @@ export default async function HomePage() {
       getTeamMembers(),
       getFeaturedAlbum(),
     ]);
+
+  const otherAlbums = featuredAlbum ? await getOtherAlbums(featuredAlbum.id, 3) : [];
 
   const latestNews = announcements.slice(0, 2);
   const officerHighlights = teamMembers.filter((m) => !m.committee).slice(0, 3);
@@ -227,7 +229,8 @@ export default async function HomePage() {
         </RevealOnScroll>
       )}
 
-      {/* Gallery Preview — poster-style key art panel */}
+      {/* Gallery Preview — featured album as full-bleed key art,
+          plus up to 3 more recent albums as cards underneath. */}
       {featuredAlbum && featuredAlbum.coverImage && (
         <RevealOnScroll>
           <section className="border-guild-green/20 bg-surface border-t">
@@ -256,6 +259,48 @@ export default async function HomePage() {
                     View Full Gallery &rarr;
                   </span>
                 </div>
+              </Link>
+
+              {otherAlbums.length > 0 && (
+                <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                  {otherAlbums.map((album) => (
+                    <Link
+                      key={album.id}
+                      href={`/gallery/${album.id}`}
+                      className="glow-card border-guild-green/20 bg-background overflow-hidden rounded-lg border"
+                    >
+                      {album.coverImage ? (
+                        <Image
+                          src={album.coverImage.url}
+                          alt={album.title}
+                          width={400}
+                          height={300}
+                          className="aspect-video w-full object-cover"
+                        />
+                      ) : (
+                        <div className="bg-surface text-muted flex aspect-video w-full items-center justify-center">
+                          No cover photo yet
+                        </div>
+                      )}
+                      <div className="p-4">
+                        <p className="font-display text-foreground font-bold tracking-wide uppercase">
+                          {album.title}
+                        </p>
+                        <p className="text-muted mt-1 text-xs">
+                          {album.images.length} photo{album.images.length === 1 ? '' : 's'}
+                          {album.eventDate && <> &middot; {album.eventDate.toLocaleDateString()}</>}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              <Link
+                href="/gallery"
+                className="font-display text-guild-green mt-6 inline-block text-sm font-bold tracking-wide uppercase hover:underline"
+              >
+                View Full Gallery &rarr;
               </Link>
             </div>
           </section>
