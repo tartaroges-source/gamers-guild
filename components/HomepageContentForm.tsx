@@ -1,6 +1,7 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState, type ChangeEvent } from 'react';
+import { upload } from '@vercel/blob/client';
 import { updateHomepageContentAction } from '@/features/homepage/actions';
 
 const inputClasses =
@@ -22,6 +23,30 @@ export function HomepageContentForm({
   hasHeroVideo,
 }: HomepageContentFormProps) {
   const [state, formAction, isPending] = useActionState(updateHomepageContentAction, undefined);
+  const [videoUrl, setVideoUrl] = useState('');
+  const [videoStatus, setVideoStatus] = useState<'idle' | 'uploading' | 'error'>('idle');
+  const [videoError, setVideoError] = useState('');
+
+  async function handleVideoChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setVideoStatus('uploading');
+    setVideoError('');
+
+    try {
+      const blob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/homepage/video-upload',
+      });
+      setVideoUrl(blob.url);
+      setVideoStatus('idle');
+    } catch (err) {
+      setVideoStatus('error');
+      setVideoError(err instanceof Error ? err.message : 'Upload failed.');
+      e.target.value = '';
+    }
+  }
 
   return (
     <form action={formAction} className="flex max-w-xl flex-col gap-5">
@@ -84,14 +109,23 @@ export function HomepageContentForm({
         </label>
         <input
           id="heroVideo"
-          name="heroVideo"
           type="file"
           accept="video/mp4,video/webm"
+          onChange={handleVideoChange}
           className="text-foreground file:bg-guild-green file:text-background hover:file:bg-guild-green-dim mt-1 w-full text-sm file:mr-4 file:rounded-md file:border-0 file:px-4 file:py-2 file:text-sm file:font-bold file:tracking-wide file:uppercase"
         />
+        <input type="hidden" name="heroVideoUrl" value={videoUrl} />
+
+        {videoStatus === 'uploading' && (
+          <p className="text-muted mt-1 text-xs">Uploading video…</p>
+        )}
+        {videoStatus === 'error' && <p className="mt-1 text-xs text-red-400">{videoError}</p>}
+        {videoUrl && videoStatus === 'idle' && (
+          <p className="text-guild-green mt-1 text-xs">Video uploaded — click Save to apply.</p>
+        )}
+
         <p className="text-muted mt-1 text-xs">
-          Max 15MB. Keep it short (8–15 seconds) and compress it before uploading — every visitor
-          downloads this file.
+          Keep it short and compressed — every visitor downloads this file. Max 100MB.
         </p>
       </div>
 
@@ -102,7 +136,7 @@ export function HomepageContentForm({
 
       <button
         type="submit"
-        disabled={isPending}
+        disabled={isPending || videoStatus === 'uploading'}
         className="bg-guild-green font-display text-background hover:bg-guild-green-dim w-fit rounded-md px-6 py-2.5 text-sm font-bold tracking-wide uppercase transition-colors disabled:opacity-50"
       >
         {isPending ? 'Saving...' : 'Save Homepage'}

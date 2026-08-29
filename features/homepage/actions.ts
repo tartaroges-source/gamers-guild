@@ -56,15 +56,13 @@ export async function updateHomepageContentAction(
     heroImageUrl = result.url;
   }
 
-  const videoFile = formData.get('heroVideo');
-  if (videoFile instanceof File && videoFile.size > 0) {
-    const result = await validateAndUploadVideo(videoFile, 'homepage');
-    if ('error' in result) {
-      return { message: result.error };
-    }
-    if (existing.heroVideoUrl) await del(existing.heroVideoUrl);
-    heroVideoUrl = result.url;
+  const newHeroVideoUrl = formData.get('heroVideoUrl');
+if (typeof newHeroVideoUrl === 'string' && newHeroVideoUrl.length > 0) {
+  if (existing.heroVideoUrl && existing.heroVideoUrl !== newHeroVideoUrl) {
+    await del(existing.heroVideoUrl);
   }
+  heroVideoUrl = newHeroVideoUrl;
+}
 
   await prisma.homepageContent.update({
     where: { id: 'singleton' },

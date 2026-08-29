@@ -10,6 +10,8 @@ import { getFeaturedAlbum, getOtherAlbums } from '@/features/albums/queries';
 import { formatEventDate } from '@/lib/format';
 import { RevealOnScroll } from '@/components/RevealOnScroll';
 import { AnnouncementGallery } from '@/components/AnnouncementGallery';
+import { HeroSlides } from '@/components/HeroSlides';
+import { SectionBackground } from '@/components/SectionBackground';
 
 const quickLinks = [
   { href: '/about', label: 'About the Guild', blurb: 'Our mission, values, and the people behind it.' },
@@ -52,7 +54,7 @@ export default async function HomePage() {
         ) : (
           <Reticle className="animate-drift text-guild-green/[0.06] pointer-events-none absolute top-1/2 right-[-120px] h-[520px] w-[520px] -translate-y-1/2" />
         )}
-        <div className="from-background via-background/85 to-background/50 absolute inset-0 bg-gradient-to-t" />
+        <div className="from-background via-background/45 to-transparent absolute inset-0 bg-gradient-to-t" />
 
         <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
           <p className="text-guild-gold font-mono text-sm tracking-widest uppercase">
@@ -67,6 +69,7 @@ export default async function HomePage() {
           {hero.heroTagline && (
             <p className="text-muted mt-6 max-w-xl text-lg">{hero.heroTagline}</p>
           )}
+          <HeroSlides slides={quickLinks} />
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
               href="/apply"
@@ -84,33 +87,12 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Quick Access — always renders, so the page never feels empty
-          even when Featured Event / Latest News have nothing to show. */}
-      <RevealOnScroll>
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <p className="text-guild-green font-mono text-xs tracking-widest uppercase">// Explore</p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {quickLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="hud-card glow-card border-guild-green/20 bg-surface rounded-lg border p-5"
-              >
-                <p className="font-display text-foreground text-base font-bold tracking-wide uppercase">
-                  {link.label}
-                </p>
-                <p className="text-muted mt-2 text-sm">{link.blurb}</p>
-              </Link>
-            ))}
-          </div>
-        </section>
-      </RevealOnScroll>
-
       {/* Featured Event — full-bleed key art panel */}
       {featuredEvent && (
         <RevealOnScroll>
-          <section className="border-guild-green/20 bg-surface border-t">
-            <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <section className="border-guild-green/20 bg-surface relative overflow-hidden border-t">
+            <SectionBackground variant="dots" />
+            <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6">
               <p className="text-guild-green font-mono text-xs tracking-widest uppercase">// Featured Event</p>
               <h2 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
                 What&apos;s Coming Up
@@ -164,9 +146,10 @@ export default async function HomePage() {
 
       {/* Latest News */}
       {latestNews.length > 0 && (
-        <RevealOnScroll>
-          <section className={`border-guild-green/20 border-t ${featuredEvent ? '' : 'bg-surface'}`}>
-            <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+        <RevealOnScroll direction="right">
+          <section className={`border-guild-green/20 relative overflow-hidden border-t ${featuredEvent ? '' : 'bg-surface'}`}>
+            <SectionBackground variant="glow" />
+            <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6">
               <p className="text-guild-green font-mono text-xs tracking-widest uppercase">// Latest News</p>
               <h2 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
                 Announcements
@@ -188,53 +171,56 @@ export default async function HomePage() {
       {/* Officer Highlights */}
       {officerHighlights.length > 0 && (
         <RevealOnScroll>
-          <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-            <p className="text-guild-green font-mono text-xs tracking-widest uppercase">// Officer Highlights</p>
-            <h2 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
-              Meet the Officers
-            </h2>
-            <div className="mt-6 grid gap-6 sm:grid-cols-3">
-              {officerHighlights.map((member) => (
-                <div
-                  key={member.id}
-                  className="glow-card border-guild-green/20 bg-surface rounded-lg border p-6 text-center"
-                >
-                  {member.photoUrl ? (
-                    <Image
-                      src={member.photoUrl}
-                      alt={member.name}
-                      width={90}
-                      height={90}
-                      className="mx-auto h-[90px] w-[90px] rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="bg-background font-display text-guild-green mx-auto flex h-[90px] w-[90px] items-center justify-center rounded-full text-xl font-bold">
-                      {member.name.charAt(0)}
-                    </div>
-                  )}
-                  <p className="font-display text-foreground mt-3 font-bold uppercase">
-                    {member.name}
-                  </p>
-                  <p className="text-guild-green mt-1 text-sm">{member.position}</p>
-                </div>
-              ))}
+          <section className="relative overflow-hidden">
+            <SectionBackground variant="dots" />
+            <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6">
+              <p className="text-guild-green font-mono text-xs tracking-widest uppercase">// Officer Highlights</p>
+              <h2 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
+                Meet the Officers
+              </h2>
+              <div className="mt-6 grid gap-6 sm:grid-cols-3">
+                {officerHighlights.map((member) => (
+                  <div
+                    key={member.id}
+                    className="glow-card border-guild-green/20 bg-surface rounded-lg border p-6 text-center"
+                  >
+                    {member.photoUrl ? (
+                      <Image
+                        src={member.photoUrl}
+                        alt={member.name}
+                        width={90}
+                        height={90}
+                        className="mx-auto h-[90px] w-[90px] rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="bg-background font-display text-guild-green mx-auto flex h-[90px] w-[90px] items-center justify-center rounded-full text-xl font-bold">
+                        {member.name.charAt(0)}
+                      </div>
+                    )}
+                    <p className="font-display text-foreground mt-3 font-bold uppercase">
+                      {member.name}
+                    </p>
+                    <p className="text-guild-green mt-1 text-sm">{member.position}</p>
+                  </div>
+                ))}
+              </div>
+              <Link
+                href="/about"
+                className="font-display text-guild-green mt-6 inline-block text-sm font-bold tracking-wide uppercase hover:underline"
+              >
+                Meet the Full Team &rarr;
+              </Link>
             </div>
-            <Link
-              href="/about"
-              className="font-display text-guild-green mt-6 inline-block text-sm font-bold tracking-wide uppercase hover:underline"
-            >
-              Meet the Full Team &rarr;
-            </Link>
           </section>
         </RevealOnScroll>
       )}
 
-      {/* Gallery Preview — featured album as full-bleed key art,
-          plus up to 3 more recent albums as cards underneath. */}
+      {/* Gallery Preview */}
       {featuredAlbum && featuredAlbum.coverImage && (
-        <RevealOnScroll>
-          <section className="border-guild-green/20 bg-surface border-t">
-            <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+        <RevealOnScroll direction="right">
+          <section className="border-guild-green/20 bg-surface relative overflow-hidden border-t">
+            <SectionBackground variant="glow" />
+            <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6">
               <p className="text-guild-green font-mono text-xs tracking-widest uppercase">// Gallery</p>
               <h2 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
                 Gallery Preview
@@ -309,8 +295,9 @@ export default async function HomePage() {
 
       {/* Closing CTA */}
       <RevealOnScroll>
-        <section className="border-guild-green/20 bg-surface border-t">
-          <div className="mx-auto flex max-w-6xl flex-col items-start gap-4 px-4 py-14 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <section className="border-guild-green/20 bg-surface relative overflow-hidden border-t">
+          <SectionBackground variant="glow" />
+          <div className="relative mx-auto flex max-w-6xl flex-col items-start gap-4 px-4 py-14 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div>
               <h2 className="font-display text-foreground text-2xl font-bold tracking-wide uppercase">
                 Ready to level up?

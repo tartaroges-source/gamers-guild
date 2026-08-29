@@ -4,7 +4,7 @@ import { DashboardSidebar } from '@/components/DashboardSidebar';
 
 const dashboardLinks = [
   { href: '/dashboard', label: 'Dashboard' },
-  { href: '/dashboard/home', label: 'Home' },
+  { href: '/dashboard/homepage', label: 'Home' },
   { href: '/dashboard/events', label: 'Events' },
   { href: '/dashboard/announcements', label: 'Announcements' },
   { href: '/dashboard/gallery', label: 'Gallery' },
