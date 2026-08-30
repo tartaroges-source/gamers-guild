@@ -3,7 +3,6 @@
 import { del } from '@vercel/blob';
 import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
-import { validateAndUploadImage, validateAndUploadVideo } from '@/lib/blob';
 import { revalidatePath } from 'next/cache';
 
 export type EventMediaActionState =
@@ -18,44 +17,32 @@ async function requireUser() {
   return session.user;
 }
 
-export async function uploadEventMediaAction(
+// Called from the client after each file has already been uploaded
+// directly to Vercel Blob — this just records the resulting URLs, so the
+// payload here is tiny regardless of how large the actual video files were.
+export async function attachEventMediaAction(
   eventId: string,
-  _prevState: EventMediaActionState,
-  formData: FormData
+  items: { url: string; type: 'IMAGE' | 'VIDEO' }[]
 ): Promise<EventMediaActionState> {
   const user = await requireUser();
   if (!user) {
     return { message: 'You must be signed in to upload event media.' };
   }
 
-  const files = formData.getAll('files').filter((f): f is File => f instanceof File && f.size > 0);
-  if (files.length === 0) {
-    return { message: 'Please choose at least one file.' };
+  if (items.length === 0) {
+    return { message: 'No files were uploaded.' };
   }
 
   const existingCount = await prisma.eventMedia.count({ where: { eventId } });
 
-  for (const [index, file] of files.entries()) {
-    const isVideo = file.type.startsWith('video/');
-    const result = isVideo
-      ? await validateAndUploadVideo(file, 'events')
-      : await validateAndUploadImage(file, 'events');
-
-    if ('error' in result) {
-      // Stop on the first bad file rather than silently skipping it —
-      // the officer should know exactly which upload failed and why.
-      return { message: `"${file.name}": ${result.error}` };
-    }
-
-    await prisma.eventMedia.create({
-      data: {
-        eventId,
-        url: result.url,
-        type: isVideo ? 'VIDEO' : 'IMAGE',
-        order: existingCount + index,
-      },
-    });
-  }
+  await prisma.eventMedia.createMany({
+    data: items.map((item, index) => ({
+      eventId,
+      url: item.url,
+      type: item.type,
+      order: existingCount + index,
+    })),
+  });
 
   revalidatePath('/events');
   revalidatePath(`/events/${eventId}`);
