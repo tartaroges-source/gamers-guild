@@ -64,6 +64,17 @@ export async function createTeamMemberAction(
     photoUrl = result.url;
   }
 
+  const signatureFile = formData.get('signature');
+  let signatureUrl: string | null = null;
+
+  if (signatureFile instanceof File && signatureFile.size > 0) {
+    const result = await validateAndUploadImage(signatureFile, 'signatures');
+    if ('error' in result) {
+      return { message: result.error };
+    }
+    signatureUrl = result.url;
+  }
+
   const member = await prisma.teamMember.create({
     data: {
       name: parsed.data.name,
@@ -72,6 +83,7 @@ export async function createTeamMemberAction(
       bio: parsed.data.bio || null,
       order: parsed.data.order,
       photoUrl,
+      signatureUrl,
       createdById: user.id,
     },
   });
@@ -134,6 +146,24 @@ export async function updateTeamMemberAction(
     photoUrl = null;
   }
 
+  const signatureFile = formData.get('signature');
+  const removeSignature = formData.get('removeSignature') === 'on';
+  let signatureUrl = existing.signatureUrl;
+
+  if (signatureFile instanceof File && signatureFile.size > 0) {
+    const result = await validateAndUploadImage(signatureFile, 'signatures');
+    if ('error' in result) {
+      return { message: result.error };
+    }
+    if (existing.signatureUrl) {
+      await del(existing.signatureUrl);
+    }
+    signatureUrl = result.url;
+  } else if (removeSignature && existing.signatureUrl) {
+    await del(existing.signatureUrl);
+    signatureUrl = null;
+  }
+
   const member = await prisma.teamMember.update({
     where: { id },
     data: {
@@ -143,6 +173,7 @@ export async function updateTeamMemberAction(
       bio: parsed.data.bio || null,
       order: parsed.data.order,
       photoUrl,
+      signatureUrl,
     },
   });
 
@@ -169,6 +200,9 @@ export async function deleteTeamMemberAction(id: string) {
 
   if (existing.photoUrl) {
     await del(existing.photoUrl);
+  }
+  if (existing.signatureUrl) {
+    await del(existing.signatureUrl);
   }
 
   await prisma.teamMember.delete({ where: { id } });

@@ -14,6 +14,7 @@ type TeamMemberFormProps = {
     order: number;
   };
   hasExistingPhoto?: boolean;
+  hasExistingSignature?: boolean;
   submitLabel: string;
 };
 
@@ -25,6 +26,7 @@ export function TeamMemberForm({
   action,
   defaultValues,
   hasExistingPhoto,
+  hasExistingSignature,
   submitLabel,
 }: TeamMemberFormProps) {
   const [state, formAction, isPending] = useActionState(action, undefined);
@@ -162,6 +164,28 @@ export function TeamMemberForm({
           <label className="mt-2 flex items-center gap-2 text-xs text-muted">
             <input type="checkbox" name="removePhoto" className="rounded" />
             Remove current photo
+          </label>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="signature" className={labelClasses}>
+          E-Signature (optional — used on generated member ID cards)
+        </label>
+        <input
+          id="signature"
+          name="signature"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          className="mt-1 w-full text-sm text-foreground file:mr-4 file:rounded-md file:border-0 file:bg-guild-green file:px-4 file:py-2 file:text-sm file:font-bold file:tracking-wide file:text-background file:uppercase hover:file:bg-guild-green-dim"
+        />
+        <p className="mt-1 text-xs text-muted">
+          Best results with a transparent PNG of just the signature.
+        </p>
+        {hasExistingSignature && (
+          <label className="mt-2 flex items-center gap-2 text-xs text-muted">
+            <input type="checkbox" name="removeSignature" className="rounded" />
+            Remove current signature
           </label>
         )}
       </div>

@@ -29,6 +29,7 @@ export default async function EditTeamMemberPage({ params }: { params: Promise<{
             order: member.order,
           }}
           hasExistingPhoto={Boolean(member.photoUrl)}
+          hasExistingSignature={Boolean(member.signatureUrl)}
           submitLabel="Save Changes"
         />
       </div>

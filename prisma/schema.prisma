@@ -231,14 +231,15 @@ model MembershipApplication {
 // separate from User — this is a verified-identity record for the QR
 // scan-to-confirm flow, not a login account.
 model Member {
-  id         String       @id @default(cuid())
-  fullName   String
-  email      String       @unique
-  studentId  String       @unique
-  department String
-  course     String
-  yearLevel  String
-  status     MemberStatus @default(ACTIVE)
+  id          String       @id @default(cuid())
+  fullName    String
+  email       String       @unique
+  studentId   String       @unique
+  department  String
+  course      String
+  yearLevel   String
+  dateOfBirth DateTime?
+  status      MemberStatus @default(ACTIVE)
 
   application   MembershipApplication @relation(fields: [applicationId], references: [id])
   applicationId String                @unique
@@ -281,13 +282,14 @@ model SiteSettings {
 // account, and this content should stay editable by any Admin/Officer,
 // not just whoever originally created a given entry.
 model TeamMember {
-  id        String  @id @default(cuid())
-  name      String
-  position  String // e.g. "President", "Events Committee Head"
-  committee String? // optional grouping, e.g. "Executive Board"
-  photoUrl  String?
-  bio       String?
-  order     Int     @default(0) // controls display order on the public page
+  id           String  @id @default(cuid())
+  name         String
+  position     String // e.g. "President", "Events Committee Head"
+  committee    String? // optional grouping, e.g. "Executive Board"
+  photoUrl     String?
+  signatureUrl String? // e-signature image, used on generated member ID cards
+  bio          String?
+  order        Int     @default(0) // controls display order on the public page
 
   createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
   createdById String?
