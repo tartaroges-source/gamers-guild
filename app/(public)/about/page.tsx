@@ -35,7 +35,7 @@ export default async function AboutPage() {
 
   const executiveMembers = members.filter((m) => !m.committee);
   const membersByPosition = Object.fromEntries(
-    executiveMembers.map((m) => [m.position, { name: m.name, photoUrl: m.photoUrl }])
+    executiveMembers.map((m) => [m.position, { name: m.name, photoUrl: m.photoUrl, bio: m.bio }])
   );
 
   const committeeGroups = members.reduce<Record<string, typeof members>>((acc, member) => {
@@ -47,23 +47,36 @@ export default async function AboutPage() {
 
   return (
     <div>
-      <section
-        className="border-guild-green/20 relative flex min-h-[50vh] flex-col items-center justify-center border-b bg-cover bg-center px-4 py-20 text-center"
-        style={
-          content.heroImageUrl
-            ? {
-                backgroundImage: `linear-gradient(rgba(14,19,16,0.75), rgba(14,19,16,0.85)), url(${content.heroImageUrl})`,
-              }
-            : undefined
-        }
-      >
-        <Image src="/logo.png" alt="Gamers' Guild crest" width={80} height={80} priority />
-        <h1 className="font-display text-foreground mt-6 text-4xl font-bold tracking-wide uppercase sm:text-5xl">
-          About Us
-        </h1>
-        {content.heroTagline && (
-          <p className="text-muted mt-4 max-w-xl text-lg">{content.heroTagline}</p>
+      <section className="border-guild-green/20 relative flex min-h-screen w-full items-center justify-center overflow-hidden border-b">
+        {content.heroImageUrl && (
+          <>
+            <Image
+              src={content.heroImageUrl}
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+            {/* Light overall darkening so the photo stays clearly visible,
+                plus a stronger scrim right behind the text for contrast. */}
+            <div className="bg-background/30 absolute inset-0" />
+            <div className="from-background via-background/40 absolute inset-0 bg-gradient-to-t to-transparent" />
+          </>
         )}
+
+        <div className="relative mx-auto flex w-full max-w-2xl flex-col items-center px-4 text-center">
+          <Image src="/logo.png" alt="Gamers' Guild crest" width={112} height={112} priority />
+          <h1
+            className="font-display text-foreground mt-6 text-4xl font-bold tracking-wide uppercase sm:text-5xl"
+            style={content.heroImageUrl ? { textShadow: '0 4px 30px rgba(0, 0, 0, 0.6)' } : undefined}
+          >
+            About Us
+          </h1>
+          {content.heroTagline && (
+            <p className="text-muted mt-4 max-w-xl text-lg">{content.heroTagline}</p>
+          )}
+        </div>
       </section>
 
       <div className="mx-auto max-w-5xl px-4 py-4 sm:px-6">

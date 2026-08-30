@@ -4,12 +4,14 @@ type OrgItem = {
   position: string;
   name?: string;
   photoUrl?: string | null;
+  bio?: string | null;
 };
 
 function NodeBox({
   position,
   name,
   photoUrl,
+  bio,
   president = false,
 }: OrgItem & { president?: boolean }) {
   return (
@@ -29,11 +31,13 @@ function NodeBox({
         hover:-translate-y-2
         hover:border-guild-green
         hover:shadow-green-900/30
+        px-4
+        pb-5
 
         ${
           president
-            ? "w-[260px] sm:w-[300px] lg:w-[320px] h-[220px] sm:h-[250px] lg:h-[260px]"
-            : "w-[220px] sm:w-[260px] lg:w-[280px] h-[200px] sm:h-[220px] lg:h-[230px]"
+            ? "w-[260px] sm:w-[300px] lg:w-[320px] min-h-[220px] sm:min-h-[250px] lg:min-h-[260px]"
+            : "w-[220px] sm:w-[260px] lg:w-[280px] min-h-[200px] sm:min-h-[220px] lg:min-h-[230px]"
         }
       `}
     >
@@ -55,7 +59,7 @@ function NodeBox({
         )}
       </div>
 
-      <div className="mt-4 sm:mt-6 text-center px-4">
+      <div className="mt-4 sm:mt-6 text-center">
         <h3 className="text-xs sm:text-sm font-bold uppercase tracking-[0.25em] sm:tracking-[0.35em] text-guild-gold">
           {position}
         </h3>
@@ -63,6 +67,12 @@ function NodeBox({
         <p className="mt-2 sm:mt-4 text-lg sm:text-xl lg:text-2xl font-bold leading-snug text-white">
           {name ?? "Vacant"}
         </p>
+
+        {bio && (
+          <p className="mt-2 text-xs sm:text-sm leading-snug text-muted">
+            {bio}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -89,7 +99,12 @@ function LevelRow({ items }: { items: OrgItem[] }) {
           <div key={item.position} className="flex flex-col items-center">
             <div className="h-8 w-[3px] bg-guild-green/50" />
 
-            <NodeBox position={item.position} name={item.name} photoUrl={item.photoUrl} />
+            <NodeBox
+              position={item.position}
+              name={item.name}
+              photoUrl={item.photoUrl}
+              bio={item.bio}
+            />
           </div>
         ))}
       </div>
@@ -97,14 +112,14 @@ function LevelRow({ items }: { items: OrgItem[] }) {
   );
 }
 
+type ExecutiveMember = {
+  name: string;
+  photoUrl: string | null;
+  bio?: string | null;
+};
+
 type ExecutiveOrgChartProps = {
-  membersByPosition: Record<
-    string,
-    {
-      name: string;
-      photoUrl: string | null;
-    } | undefined
-  >;
+  membersByPosition: Record<string, ExecutiveMember | undefined>;
 };
 
 export function ExecutiveOrgChart({ membersByPosition }: ExecutiveOrgChartProps) {
@@ -115,6 +130,7 @@ export function ExecutiveOrgChart({ membersByPosition }: ExecutiveOrgChartProps)
       position,
       name: match?.name,
       photoUrl: match?.photoUrl,
+      bio: match?.bio,
     };
   };
 
