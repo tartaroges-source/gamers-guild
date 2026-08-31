@@ -1,10 +1,11 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { submitApplicationAction } from '@/features/applications/actions';
 import { IdPictureUpload } from '@/components/IdPictureUpload';
 import { CourseSelect } from '@/components/CourseSelect';
+import { SignaturePad } from '@/components/SignaturePad';
 
 const baseInputClasses =
   'mt-1 w-full rounded-md border bg-background px-3 py-2 text-foreground focus:ring-1 focus:outline-none';
@@ -19,6 +20,10 @@ function fieldClasses(hasError: boolean) {
 
 const initialValues = {
   fullName: '',
+  ign: '',
+  birthMonth: '',
+  birthDay: '',
+  birthYear: '',
   email: '',
   studentId: '',
   gamesPlayed: '',
@@ -28,10 +33,40 @@ const initialValues = {
   yearLevel: '',
 };
 
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+const CURRENT_YEAR = new Date().getFullYear();
+// Newest-first: someone who just turned 13 (the minimum age) appears near
+// the top, since that's close to the age range most applicants fall into.
+const BIRTH_YEARS = Array.from({ length: 88 }, (_, i) => CURRENT_YEAR - 13 - i);
+
+function daysInMonth(month: number, year: number): number {
+  return new Date(year, month, 0).getDate();
+}
+
+function dataUrlToFile(dataUrl: string, filename: string): File {
+  const [header, base64] = dataUrl.split(',');
+  const mime = header.match(/:(.*?);/)?.[1] ?? 'image/png';
+  const binary = atob(base64);
+  const array = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    array[i] = binary.charCodeAt(i);
+  }
+  return new File([array], filename, { type: mime });
+}
+
 export function ApplicationForm() {
   const [state, formAction, isPending] = useActionState(submitApplicationAction, undefined);
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'ONLINE'>('CASH');
   const [values, setValues] = useState(initialValues);
+  const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
+  const [signatureError, setSignatureError] = useState<string | undefined>(undefined);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const dobError = state?.errors?.dateOfBirth?.[0];
 
   // After each submission attempt, clear only the field(s) that actually
   // failed validation — everything else keeps whatever the person typed,
@@ -42,6 +77,7 @@ export function ApplicationForm() {
     if (state.success) {
       setValues(initialValues);
       setPaymentMethod('CASH');
+      setSignatureDataUrl(null);
       return;
     }
 
@@ -51,6 +87,11 @@ export function ApplicationForm() {
         for (const key of Object.keys(state.errors ?? {})) {
           if (key in next) {
             next[key as keyof typeof next] = '';
+          }
+          if (key === 'dateOfBirth') {
+            next.birthMonth = '';
+            next.birthDay = '';
+            next.birthYear = '';
           }
         }
         return next;
@@ -64,9 +105,45 @@ export function ApplicationForm() {
     };
   }
 
+  const availableDays = values.birthMonth
+    ? daysInMonth(Number(values.birthMonth), Number(values.birthYear) || CURRENT_YEAR)
+    : 31;
+
+  const dateOfBirthValue =
+    values.birthYear && values.birthMonth && values.birthDay
+      ? `${values.birthYear}-${values.birthMonth.padStart(2, '0')}-${values.birthDay.padStart(2, '0')}`
+      : '';
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    if (!signatureDataUrl) {
+      e.preventDefault();
+      setSignatureError('Please sign above before submitting.');
+      return;
+    }
+    setSignatureError(undefined);
+
+    // The signature exists only as canvas data in the browser — convert
+    // it to a real File and attach it to the form right before submit,
+    // so the server action can handle it exactly like idPicture/paymentProof.
+    const form = e.currentTarget;
+    const existingInput = form.elements.namedItem('signature') as HTMLInputElement | null;
+    existingInput?.remove();
+
+    const file = dataUrlToFile(signatureDataUrl, 'signature.png');
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.name = 'signature';
+    input.hidden = true;
+    input.files = dataTransfer.files;
+    form.appendChild(input);
+  }
+
   return (
     <>
-      <form action={formAction} className="flex flex-col gap-5">
+      <form ref={formRef} action={formAction} onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div>
           <label htmlFor="fullName" className={labelClasses}>
             Full Name
@@ -83,6 +160,81 @@ export function ApplicationForm() {
           {state?.errors?.fullName && (
             <p className={errorTextClasses}>{state.errors.fullName[0]}</p>
           )}
+        </div>
+
+        <div>
+          <label htmlFor="ign" className={labelClasses}>
+            In-Game Name (IGN)
+          </label>
+          <input
+            id="ign"
+            name="ign"
+            type="text"
+            required
+            value={values.ign}
+            onChange={setField('ign')}
+            className={fieldClasses(Boolean(state?.errors?.ign))}
+          />
+          {state?.errors?.ign && <p className={errorTextClasses}>{state.errors.ign[0]}</p>}
+        </div>
+
+        <div>
+          <label className={labelClasses}>Date of Birth</label>
+          <div className="mt-1 grid grid-cols-3 gap-2">
+            <select
+              aria-label="Birth month"
+              value={values.birthMonth}
+              onChange={(e) =>
+                setValues((prev) => ({ ...prev, birthMonth: e.target.value, birthDay: '' }))
+              }
+              className={fieldClasses(Boolean(dobError))}
+            >
+              <option value="" disabled>
+                Month
+              </option>
+              {MONTHS.map((m, i) => (
+                <option key={m} value={String(i + 1)}>
+                  {m}
+                </option>
+              ))}
+            </select>
+
+            <select
+              aria-label="Birth day"
+              value={values.birthDay}
+              onChange={(e) => setValues((prev) => ({ ...prev, birthDay: e.target.value }))}
+              className={fieldClasses(Boolean(dobError))}
+            >
+              <option value="" disabled>
+                Day
+              </option>
+              {Array.from({ length: availableDays }, (_, i) => i + 1).map((d) => (
+                <option key={d} value={String(d)}>
+                  {d}
+                </option>
+              ))}
+            </select>
+
+            <select
+              aria-label="Birth year"
+              value={values.birthYear}
+              onChange={(e) =>
+                setValues((prev) => ({ ...prev, birthYear: e.target.value, birthDay: '' }))
+              }
+              className={fieldClasses(Boolean(dobError))}
+            >
+              <option value="" disabled>
+                Year
+              </option>
+              {BIRTH_YEARS.map((y) => (
+                <option key={y} value={String(y)}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </div>
+          <input type="hidden" name="dateOfBirth" value={dateOfBirthValue} />
+          {dobError && <p className={errorTextClasses}>{dobError}</p>}
         </div>
 
         <div>
@@ -246,6 +398,13 @@ export function ApplicationForm() {
             className={fieldClasses(Boolean(state?.errors?.message))}
           />
           {state?.errors?.message && <p className={errorTextClasses}>{state.errors.message[0]}</p>}
+        </div>
+
+        <div>
+          <label className={labelClasses}>Signature</label>
+          <div className="mt-1">
+            <SignaturePad onChange={setSignatureDataUrl} error={signatureError} />
+          </div>
         </div>
 
         {state?.message && (

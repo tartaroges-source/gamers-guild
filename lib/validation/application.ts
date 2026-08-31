@@ -19,6 +19,21 @@ const COURSES_BY_DEPARTMENT: Record<(typeof DEPARTMENTS)[number], string[]> = {
 export const applicationFormSchema = z
   .object({
     fullName: z.string().trim().min(2, 'Please enter your full name.'),
+    ign: z.string().trim().min(1, 'Please enter your in-game name.').max(50),
+    dateOfBirth: z
+      .string()
+      .trim()
+      .refine((val) => !Number.isNaN(new Date(val).getTime()), {
+        message: 'Please enter a valid date of birth.',
+      })
+      .refine(
+        (val) => {
+          const date = new Date(val);
+          const age = (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+          return age >= 13 && age <= 100;
+        },
+        { message: 'Please enter a realistic date of birth.' }
+      ),
     email: z.string().trim().email('Please enter a valid email address.'),
     studentId: z
       .string()

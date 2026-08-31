@@ -32,6 +32,8 @@ export async function submitApplicationAction(
 ): Promise<ApplicationActionState> {
   const parsed = applicationFormSchema.safeParse({
     fullName: formData.get('fullName'),
+    ign: formData.get('ign'),
+    dateOfBirth: formData.get('dateOfBirth'),
     email: formData.get('email'),
     studentId: formData.get('studentId'),
     department: formData.get('department'),
@@ -94,6 +96,16 @@ export async function submitApplicationAction(
       return { message: idUploadResult.error };
     }
 
+    const signatureFile = formData.get('signature');
+    if (!(signatureFile instanceof File) || signatureFile.size === 0) {
+      return { message: 'Please provide your signature.' };
+    }
+
+    const signatureUploadResult = await validateAndUploadImage(signatureFile, 'signatures');
+    if ('error' in signatureUploadResult) {
+      return { message: signatureUploadResult.error };
+    }
+
     let paymentProofUrl: string | null = null;
     if (parsed.data.paymentMethod === 'ONLINE') {
       const proofFile = formData.get('paymentProof');
@@ -108,7 +120,13 @@ export async function submitApplicationAction(
     }
 
     await prisma.membershipApplication.create({
-      data: { ...parsed.data, idPictureUrl: idUploadResult.url, paymentProofUrl },
+      data: {
+        ...parsed.data,
+        dateOfBirth: new Date(parsed.data.dateOfBirth),
+        idPictureUrl: idUploadResult.url,
+        signatureUrl: signatureUploadResult.url,
+        paymentProofUrl,
+      },
     });
 
     return { success: true };
@@ -144,6 +162,9 @@ export async function approveApplicationAction(id: string) {
     prisma.member.create({
       data: {
         fullName: application.fullName,
+        ign: application.ign,
+        dateOfBirth: application.dateOfBirth,
+        signatureUrl: application.signatureUrl,
         email: application.email,
         studentId: application.studentId,
         department: application.department,
