@@ -24,6 +24,12 @@ type MemberIdCardProps = {
 const CARD_WIDTH = 1344;
 const CARD_HEIGHT = 824;
 
+// No fixed width / overflow-hidden / ellipsis here on purpose: those three
+// together were the cause of text getting sliced in the exported PDF, since
+// html2canvas can render slightly wider glyphs than the live browser at
+// 3x scale. Letting text size naturally (whiteSpace: nowrap only) means it
+// can never be clipped, at the cost of needing generous empty space to the
+// right of each value — which the template already has.
 const valueStyle: React.CSSProperties = {
   margin: 0,
   position: 'absolute',
@@ -34,8 +40,6 @@ const valueStyle: React.CSSProperties = {
   letterSpacing: '0.035em',
   textTransform: 'uppercase',
   whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
   textShadow: '0 0 4px rgba(255, 255, 255, 0.82), 0 0 11px rgba(255, 255, 255, 0.28)',
 };
 
@@ -99,6 +103,7 @@ function SignatureImage({ src }: { src: string }) {
     <img
       src={processedSrc}
       alt="Signature"
+      data-card-image="true"
       style={{ width: '100%', height: '100%', objectFit: 'contain' }}
     />
   );
@@ -131,12 +136,15 @@ export function MemberIdCard({
           background: '#0e1310',
           borderRadius: 64,
           overflow: 'hidden',
+          border: '6px solid #ffd400',
+          boxSizing: 'border-box',
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- native img required for reliable html2canvas capture */}
         <img
           src="/id-card-front.png"
           alt=""
+          data-card-image="true"
           width={CARD_WIDTH}
           height={CARD_HEIGHT}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
@@ -172,6 +180,7 @@ export function MemberIdCard({
                 src={photoUrl}
                 alt={fullName}
                 crossOrigin="anonymous"
+                data-card-image="true"
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             ) : (
@@ -225,6 +234,7 @@ export function MemberIdCard({
         <img
           src="/logo.png"
           alt="Gamers' Guild crest"
+          data-card-image="true"
           style={{
             position: 'absolute',
             left: 415,
@@ -240,15 +250,13 @@ export function MemberIdCard({
             position: 'absolute',
             left: 78,
             top: 591,
-            maxWidth: 320,
+            maxWidth: 420,
             color: '#ffffff',
             fontSize: 20,
             fontWeight: 800,
             lineHeight: 1.15,
             textTransform: 'uppercase',
             whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
             textShadow: '0 0 4px rgba(255, 255, 255, 0.72), 0 0 9px rgba(255, 255, 255, 0.22)',
           }}
         >
@@ -265,6 +273,7 @@ export function MemberIdCard({
             fontWeight: 700,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
+            whiteSpace: 'nowrap',
             textShadow: '0 0 3px rgba(255, 255, 255, 0.7), 0 0 7px rgba(255, 255, 255, 0.2)',
           }}
         >
@@ -273,25 +282,25 @@ export function MemberIdCard({
 
         <div
           className={montserrat.className}
-          style={{ ...valueStyle, left: 596, top: 350, width: 355 }}
+          style={{ ...valueStyle, left: 596, top: 350 }}
         >
           {studentId}
         </div>
         <div
           className={montserrat.className}
-          style={{ ...valueStyle, left: 1000, top: 350, width: 270 }}
+          style={{ ...valueStyle, left: 1000, top: 350 }}
         >
           {positionLabel}
         </div>
         <div
           className={montserrat.className}
-          style={{ ...valueStyle, left: 596, top: 452, width: 355 }}
+          style={{ ...valueStyle, left: 596, top: 452 }}
         >
           {dateOfBirth}
         </div>
         <div
           className={montserrat.className}
-          style={{ ...valueStyle, left: 996, top: 452, width: 295 }}
+          style={{ ...valueStyle, left: 996, top: 452, fontSize: 19 }}
         >
           {dateOfIssue}
         </div>
@@ -321,8 +330,6 @@ export function MemberIdCard({
               textTransform: 'uppercase',
               textAlign: 'right',
               whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
               textShadow: '0 0 4px rgba(255, 212, 0, 0.85), 0 0 10px rgba(255, 212, 0, 0.35)',
             }}
           >
@@ -339,8 +346,6 @@ export function MemberIdCard({
               fontWeight: 700,
               lineHeight: 1.4,
               whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
               textShadow: '0 0 4px rgba(255, 255, 255, 0.75), 0 0 9px rgba(255, 255, 255, 0.25)',
             }}
           >
@@ -358,12 +363,15 @@ export function MemberIdCard({
           background: '#0e1310',
           borderRadius: 64,
           overflow: 'hidden',
+          border: '6px solid #ffd400',
+          boxSizing: 'border-box',
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- native img required for reliable html2canvas capture */}
         <img
           src="/id-card-back.png"
           alt=""
+          data-card-image="true"
           width={CARD_WIDTH}
           height={CARD_HEIGHT}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
@@ -392,6 +400,7 @@ export function MemberIdCard({
             <img
               src={qrDataUrl}
               alt="Member verification QR code"
+              data-card-image="true"
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           </div>
@@ -401,6 +410,7 @@ export function MemberIdCard({
         <img
           src="/president-signature-cropped.png"
           alt="President signature"
+          data-card-image="true"
           style={{
             position: 'absolute',
             left: 978,
