@@ -23,10 +23,6 @@ const CARD_WIDTH_IN = 3.375;
 // inside MemberIdCard itself.
 const CARD_WIDTH_PX = 1344;
 const CARD_HEIGHT_PX = 824;
-// MemberIdCard stacks front + back with `gap-8` (Tailwind's 2rem, 32px at
-// the default root font size). The previous version only reserved height
-// for a single card, which caused the second card to spill outside its
-// wrapper on desktop (scale === 1) and visually cover the download button.
 const CARD_GAP_PX = 32;
 const TOTAL_CONTENT_HEIGHT_PX = CARD_HEIGHT_PX * 2 + CARD_GAP_PX;
 
@@ -49,14 +45,6 @@ function waitForCardImages(container: HTMLElement): Promise<void> {
   });
 }
 
-// Shrinks the fixed-size card pair to fit narrow screens using a pure CSS
-// transform. This changes only how the content is painted on screen — the
-// element's real layout size (offsetWidth/offsetHeight) is unchanged, so
-// html-to-image still captures each card at full, unscaled resolution
-// regardless of how small it's being displayed here. The wrapper's
-// reserved height now accounts for BOTH cards + the gap between them, so
-// nothing spills outside its box at any scale, including scale === 1 on
-// desktop.
 function ScaledCard({ children }: { children: React.ReactNode }) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -95,6 +83,15 @@ function ScaledCard({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Lets the browser breathe (and release memory from the previous capture)
+// between rendering the front and back cards — a bare await Promise
+// wasn't enough; waiting for a real animation frame gives the browser an
+// actual opportunity to run garbage collection before the next heavy
+// capture starts.
+function nextFrame(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
 export function MemberIdCardView(props: MemberIdCardViewProps) {
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
@@ -116,9 +113,17 @@ export function MemberIdCardView(props: MemberIdCardViewProps) {
 
       const { jsPDF } = await import('jspdf');
 
-      const captureOptions = { pixelRatio: 3, cacheBust: true, backgroundColor: undefined };
+      // pixelRatio was 3, which — combined with html-to-image embedding
+      // every image (including full-resolution template PNGs) as base64
+      // during capture — produced enough memory pressure to crash the
+      // tab. 2x is still solidly print-quality (~192 DPI on a CR80 card)
+      // at a fraction of the memory cost. cacheBust removed too, since
+      // forcing a fresh network fetch + re-encode on every single
+      // download was pure added memory/time cost for no benefit here.
+      const captureOptions = { pixelRatio: 2, backgroundColor: undefined };
 
       const frontDataUrl = await toPng(frontRef.current, captureOptions);
+      await nextFrame();
       const backDataUrl = await toPng(backRef.current, captureOptions);
 
       const frontImg = new Image();

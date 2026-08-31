@@ -18,18 +18,18 @@ type MemberIdCardProps = {
   qrDataUrl: string | null;
 };
 
-// Native dimensions of the supplied front/back template PNGs. The overlay
-// coordinates below are deliberately pixels, so their placement is stable in
-// both the on-screen preview and the exported PDF.
 const CARD_WIDTH = 1344;
 const CARD_HEIGHT = 824;
 
-// No fixed width / overflow-hidden / ellipsis here on purpose: those three
-// together were the cause of text getting sliced in the exported PDF, since
-// html2canvas can render slightly wider glyphs than the live browser at
-// 3x scale. Letting text size naturally (whiteSpace: nowrap only) means it
-// can never be clipped, at the cost of needing generous empty space to the
-// right of each value — which the template already has.
+// Layout-neutral border: `outline` never takes up box space or resizes
+// the element (unlike `border`, which shifted the whole rendered box and
+// threw off every absolutely-positioned overlay when it was added
+// earlier). Same visual gold border effect, none of the side effects.
+const cardOutlineStyle: React.CSSProperties = {
+  outline: '6px solid #ffd400',
+  outlineOffset: '-6px',
+};
+
 const valueStyle: React.CSSProperties = {
   margin: 0,
   position: 'absolute',
@@ -84,7 +84,6 @@ function SignatureImage({ src }: { src: string }) {
         context.putImageData(imageData, 0, 0);
         if (!cancelled) setProcessedSrc(canvas.toDataURL('image/png'));
       } catch {
-        // Keep the original image if a remote source cannot be read by the canvas.
         if (!cancelled) setProcessedSrc(src);
       }
     };
@@ -136,8 +135,7 @@ export function MemberIdCard({
           background: '#0e1310',
           borderRadius: 64,
           overflow: 'hidden',
-          border: '6px solid #ffd400',
-          boxSizing: 'border-box',
+          ...cardOutlineStyle,
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- native img required for reliable html2canvas capture */}
@@ -150,8 +148,6 @@ export function MemberIdCard({
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
         />
 
-        {/* This panel replaces the template's photo placeholder completely,
-            then supplies its own yellow frame. */}
         <div
           style={{
             position: 'absolute',
@@ -204,7 +200,6 @@ export function MemberIdCard({
           </div>
         </div>
 
-        {/* Identity in the lower portion of the photo, as in the supplied sample. */}
         <div
           className={yellowtail.className}
           style={{
@@ -219,17 +214,11 @@ export function MemberIdCard({
             fontWeight: 700,
             lineHeight: 1,
             whiteSpace: 'nowrap',
-            // Let script ascenders and flourishes extend naturally; clipping
-            // here was the source of the squared-off nickname edges.
             overflow: 'visible',
           }}
         >
           {ign}
         </div>
-        {/* The crest in the supplied ID template sits over the lower-right
-            corner of the member photo. The photo overlay covers the
-            template's original crest, so render the real transparent asset
-            above it. */}
         {/* eslint-disable-next-line @next/next/no-img-element -- native img required for reliable html2canvas capture */}
         <img
           src="/logo.png"
@@ -280,22 +269,13 @@ export function MemberIdCard({
           Member since {memberSince}
         </div>
 
-        <div
-          className={montserrat.className}
-          style={{ ...valueStyle, left: 596, top: 350 }}
-        >
+        <div className={montserrat.className} style={{ ...valueStyle, left: 596, top: 350 }}>
           {studentId}
         </div>
-        <div
-          className={montserrat.className}
-          style={{ ...valueStyle, left: 1000, top: 350 }}
-        >
+        <div className={montserrat.className} style={{ ...valueStyle, left: 1000, top: 350 }}>
           {positionLabel}
         </div>
-        <div
-          className={montserrat.className}
-          style={{ ...valueStyle, left: 596, top: 452 }}
-        >
+        <div className={montserrat.className} style={{ ...valueStyle, left: 596, top: 452 }}>
           {dateOfBirth}
         </div>
         <div
@@ -311,10 +291,6 @@ export function MemberIdCard({
           </div>
         )}
 
-        {/* The template owns the expiry text. Keeping it in the source image
-            avoids a visible rectangular cover behind dynamic text. */}
-
-        {/* Align the dynamic values to the template's existing divider. */}
         <div style={{ position: 'absolute', left: 730, top: 751, width: 560, height: 38 }}>
           <span
             className={montserrat.className}
@@ -363,8 +339,7 @@ export function MemberIdCard({
           background: '#0e1310',
           borderRadius: 64,
           overflow: 'hidden',
-          border: '6px solid #ffd400',
-          boxSizing: 'border-box',
+          ...cardOutlineStyle,
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- native img required for reliable html2canvas capture */}
@@ -377,10 +352,6 @@ export function MemberIdCard({
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
         />
 
-        {/* Covers the template's static decorative QR graphic with the
-            member's real, scannable QR code. Sized/positioned to match
-            the template's QR panel — nudge left/top/width/height here if
-            it doesn't line up exactly against the actual template art. */}
         {qrDataUrl && (
           <div
             style={{
