@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import QRCode from 'qrcode';
 import { getMembersForDashboard, getDistinctCourses } from '@/features/members/queries';
 import { getBaseUrl } from '@/lib/url';
@@ -105,6 +106,12 @@ const [members, baseUrl, courses] = await Promise.all([
                     {member.status} (click to toggle)
                   </button>
                 </form>
+                <Link
+                  href={`/dashboard/members/${member.id}/id-card`}
+                  className="border-guild-green/40 text-guild-green hover:bg-guild-green/10 mt-2 inline-block rounded-md border px-2 py-1 text-xs"
+                >
+                  Generate ID
+                </Link>
               </div>
             </div>
           ))}
