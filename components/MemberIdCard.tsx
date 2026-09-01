@@ -22,7 +22,7 @@ const CARD_WIDTH = 1344;
 const CARD_HEIGHT = 824;
 
 const cardOutlineStyle: React.CSSProperties = {
-  outline: '6px solid #ffd400',
+  outline: '6px solid #75cf48',
   outlineOffset: '-6px',
 };
 
@@ -39,22 +39,6 @@ const valueStyle: React.CSSProperties = {
   textShadow: '0 0 4px rgba(255, 255, 255, 0.82), 0 0 11px rgba(255, 255, 255, 0.28)',
 };
 
-// Converts a black-ink-on-white signature into white ink on a transparent
-// background, so it reads correctly against the card's dark theme.
-//
-// Previously this fetched the remote Vercel Blob image directly into a
-// cross-origin <img crossOrigin="anonymous">, then read its pixels with
-// getImageData(). If the response didn't carry the exact CORS headers the
-// browser expects, that read silently throws a SecurityError ("tainted
-// canvas") — which our catch block absorbed by falling back to the raw,
-// unprocessed image. That fallback is what's been showing as a plain
-// white box with black ink.
-//
-// The fix: fetch() the image ourselves first and convert it to a
-// same-origin blob: URL before ever touching a <canvas>. A same-origin
-// image can never taint a canvas, regardless of what CORS headers the
-// original server did or didn't send — so the conversion now runs
-// reliably instead of silently failing.
 function SignatureImage({ src }: { src: string }) {
   const [processedSrc, setProcessedSrc] = useState<string | null>(null);
 
@@ -161,6 +145,7 @@ export function MemberIdCard({
           background: '#0e1310',
           borderRadius: 64,
           overflow: 'hidden',
+          
           ...cardOutlineStyle,
         }}
       >
@@ -177,14 +162,14 @@ export function MemberIdCard({
         <div
           style={{
             position: 'absolute',
-            left: 56,
-            top: 54,
-            width: 470,
-            height: 612,
-            padding: 5,
+            left: 48,
+            top: 45,
+            width: 476,
+            height: 629,
             borderRadius: 42,
-            background: '#ffd400',
             overflow: 'hidden',
+            border: '7px solid #75cf48',
+    boxSizing: 'border-box',
           }}
         >
           <div
@@ -226,22 +211,32 @@ export function MemberIdCard({
           </div>
         </div>
 
-        <div
-          className={yellowtail.className}
-          style={{
-            position: 'absolute',
-            left: 70,
-            top: 500,
-            width: 350,
-            padding: '8px 14px 12px',
-            color: '#ffd400',
-            fontSize: 76,
-            fontFamily: '"Brush Script MT", "Segoe Script", var(--font-yellowtail)',
-            fontWeight: 700,
-            lineHeight: 1,
-            whiteSpace: 'nowrap',
-            overflow: 'visible',
-          }}
+      <div
+  className={yellowtail.className}
+  style={{
+    position: 'absolute',
+    left: 70,
+    top: 500,
+    width: 350,
+    padding: '8px 14px 12px',
+    color: '#75cf48',
+    fontSize: 76,
+    fontFamily: '"Brush Script MT", "Segoe Script", var(--font-yellowtail)',
+    fontWeight: 700,
+    lineHeight: 1,
+    whiteSpace: 'nowrap',
+    overflow: 'visible',
+
+    // Black stroke
+    WebkitTextStroke: '3px #000',
+    paintOrder: 'stroke fill',
+
+    // Subtle glow
+    textShadow: `
+      0 0 5px rgba(117, 207, 72, 0.7),
+      0 0 12px rgba(117, 207, 72, 0.4)
+    `,
+  }}
         >
           {ign}
         </div>
@@ -295,41 +290,50 @@ export function MemberIdCard({
           Member since {memberSince}
         </div>
 
-        <div className={montserrat.className} style={{ ...valueStyle, left: 596, top: 350 }}>
+        <div className={montserrat.className} style={{ ...valueStyle, left: 597, top: 350 }}>
           {studentId}
         </div>
-        <div className={montserrat.className} style={{ ...valueStyle, left: 1000, top: 350 }}>
+        <div className={montserrat.className} style={{ ...valueStyle, left: 1008, top: 350 }}>
           {positionLabel}
         </div>
-        <div className={montserrat.className} style={{ ...valueStyle, left: 596, top: 452 }}>
+        <div className={montserrat.className} style={{ ...valueStyle, left: 597, top: 454 }}>
           {dateOfBirth}
         </div>
-        <div className={montserrat.className} style={{ ...valueStyle, left: 996, top: 452 }}>
+        <div className={montserrat.className} style={{ ...valueStyle, left: 1004, top: 454 }}>
           {dateOfIssue}
         </div>
 
         {signatureUrl && (
-          <div style={{ position: 'absolute', left: 590, top: 553, width: 270, height: 105 }}>
+          <div
+            style={{
+              position: 'absolute',
+              left: 590,
+              top: 553,
+              width: 270,
+              height: 105,
+              background: 'transparent',
+            }}
+          >
             <SignatureImage src={signatureUrl} />
           </div>
         )}
 
-        <div style={{ position: 'absolute', left: 730, top: 751, width: 560, height: 38 }}>
+        <div style={{ position: 'absolute', left: 734, top: 756, width: 560, height: 38 }}>
           <span
             className={montserrat.className}
             style={{
               position: 'absolute',
               left: 0,
               width: 260,
-              color: '#ffd400',
-              fontSize: 23,
+              color: '#75cf48',
+              fontSize: 30,
               fontWeight: 800,
               lineHeight: 1.4,
               letterSpacing: '0.03em',
               textTransform: 'uppercase',
               textAlign: 'right',
               whiteSpace: 'nowrap',
-              textShadow: '0 0 4px rgba(255, 212, 0, 0.85), 0 0 10px rgba(255, 212, 0, 0.35)',
+              textShadow: '0 0 4px rgba(117, 207, 72, 0.85), 0 0 10px rgba(117, 207, 72, 0.35)',
             }}
           >
             {ign}
@@ -341,7 +345,7 @@ export function MemberIdCard({
               left: 300,
               width: 250,
               color: '#ffffff',
-              fontSize: 21,
+              fontSize: 30,
               fontWeight: 700,
               lineHeight: 1.4,
               whiteSpace: 'nowrap',
@@ -379,14 +383,14 @@ export function MemberIdCard({
           <div
             style={{
               position: 'absolute',
-              left: 148,
+              left: 130,
               top: 180,
-              width: 452,
-              height: 465,
+              width: 468,
+              height: 470,
               padding: 6,
               borderRadius: 24,
               background: '#ffffff',
-              border: '4px solid #ffd400',
+              border: '4px solid #75cf48',
               boxSizing: 'border-box',
             }}
           >
