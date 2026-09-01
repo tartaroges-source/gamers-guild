@@ -182,6 +182,7 @@ export async function uploadAlbumImageAction(
   revalidatePath(`/gallery/${albumId}`);
   revalidatePath(`/dashboard/gallery/${albumId}`);
   revalidatePath('/dashboard/gallery');
+  revalidatePath('/');
 }
 
 export async function deleteAlbumImageAction(imageId: string, url: string, albumId: string) {
@@ -198,6 +199,7 @@ export async function deleteAlbumImageAction(imageId: string, url: string, album
   revalidatePath(`/gallery/${albumId}`);
   revalidatePath(`/dashboard/gallery/${albumId}`);
   revalidatePath('/dashboard/gallery');
+  revalidatePath('/');
 }
 
 export async function setCoverImageAction(albumId: string, imageId: string) {
@@ -209,4 +211,5 @@ export async function setCoverImageAction(albumId: string, imageId: string) {
   revalidatePath('/gallery');
   revalidatePath(`/gallery/${albumId}`);
   revalidatePath(`/dashboard/gallery/${albumId}`);
+  revalidatePath('/');
 }
