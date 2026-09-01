@@ -6,6 +6,11 @@ import { formatDateOnly } from '@/lib/format';
 import { getBaseUrl } from '@/lib/url';
 import { MemberIdCardView } from '@/components/MemberIdCardView';
 
+// Fixed per current instruction — every generated card shows this same
+// issue date, regardless of when it's actually printed. Change the date
+// below if this needs to move again later.
+const FIXED_DATE_OF_ISSUE = new Date('2026-10-07');
+
 export default async function MemberIdCardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const member = await getMemberById(id);
@@ -20,8 +25,6 @@ export default async function MemberIdCardPage({ params }: { params: Promise<{ i
   });
 
   const isOfficer = Boolean(officerAccount);
-
-  const dateOfIssue = new Date();
 
   const baseUrl = await getBaseUrl();
   const qrDataUrl = await QRCode.toDataURL(`${baseUrl}/verify/${member.id}`, { width: 500 });
@@ -43,7 +46,7 @@ export default async function MemberIdCardPage({ params }: { params: Promise<{ i
           studentId={member.studentId}
           positionLabel={isOfficer ? 'Officer' : 'Member'}
           dateOfBirth={member.dateOfBirth ? formatDateOnly(member.dateOfBirth) : '—'}
-          dateOfIssue={formatDateOnly(dateOfIssue)}
+          dateOfIssue={formatDateOnly(FIXED_DATE_OF_ISSUE)}
           memberSince={String(member.joinedAt.getFullYear())}
           signatureUrl={member.signatureUrl}
           qrDataUrl={qrDataUrl}

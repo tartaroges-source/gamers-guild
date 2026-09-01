@@ -64,6 +64,7 @@ export function ApplicationForm() {
   const [values, setValues] = useState(initialValues);
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
   const [signatureError, setSignatureError] = useState<string | undefined>(undefined);
+  const [signatureMode, setSignatureMode] = useState<'draw' | 'upload'>('draw');
   const formRef = useRef<HTMLFormElement>(null);
 
   const dobError = state?.errors?.dateOfBirth?.[0];
@@ -184,9 +185,14 @@ export function ApplicationForm() {
             <select
               aria-label="Birth month"
               value={values.birthMonth}
-              onChange={(e) =>
-                setValues((prev) => ({ ...prev, birthMonth: e.target.value, birthDay: '' }))
-              }
+              onChange={(e) => {
+  const newMonth = e.target.value;
+  setValues((prev) => {
+    const maxDay = daysInMonth(Number(newMonth), Number(prev.birthYear) || CURRENT_YEAR);
+    const dayStillValid = prev.birthDay && Number(prev.birthDay) <= maxDay;
+    return { ...prev, birthMonth: newMonth, birthDay: dayStillValid ? prev.birthDay : '' };
+  });
+}}
               className={fieldClasses(Boolean(dobError))}
             >
               <option value="" disabled>
@@ -218,9 +224,16 @@ export function ApplicationForm() {
             <select
               aria-label="Birth year"
               value={values.birthYear}
-              onChange={(e) =>
-                setValues((prev) => ({ ...prev, birthYear: e.target.value, birthDay: '' }))
-              }
+              onChange={(e) => {
+  const newYear = e.target.value;
+  setValues((prev) => {
+    const maxDay = prev.birthMonth
+      ? daysInMonth(Number(prev.birthMonth), Number(newYear))
+      : 31;
+    const dayStillValid = prev.birthDay && Number(prev.birthDay) <= maxDay;
+    return { ...prev, birthYear: newYear, birthDay: dayStillValid ? prev.birthDay : '' };
+  });
+}}
               className={fieldClasses(Boolean(dobError))}
             >
               <option value="" disabled>
@@ -401,11 +414,64 @@ export function ApplicationForm() {
         </div>
 
         <div>
-          <label className={labelClasses}>Signature</label>
-          <div className="mt-1">
-            <SignaturePad onChange={setSignatureDataUrl} error={signatureError} />
-          </div>
-        </div>
+  <label className={labelClasses}>Signature</label>
+  <div className="mt-2 flex gap-4 text-sm text-foreground">
+    <label className="flex items-center gap-2">
+      <input
+        type="radio"
+        name="signatureMode"
+        checked={signatureMode === 'draw'}
+        onChange={() => {
+          setSignatureMode('draw');
+          setSignatureDataUrl(null);
+        }}
+      />
+      Draw Signature
+    </label>
+    <label className="flex items-center gap-2">
+      <input
+        type="radio"
+        name="signatureMode"
+        checked={signatureMode === 'upload'}
+        onChange={() => {
+          setSignatureMode('upload');
+          setSignatureDataUrl(null);
+        }}
+      />
+      Upload Signature Image
+    </label>
+  </div>
+
+  <div className="mt-2">
+    {signatureMode === 'draw' ? (
+      <SignaturePad onChange={setSignatureDataUrl} error={signatureError} />
+    ) : (
+      <div>
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => setSignatureDataUrl(reader.result as string);
+            reader.readAsDataURL(file);
+          }}
+          className="text-foreground file:bg-guild-green file:text-background hover:file:bg-guild-green-dim text-sm file:mr-4 file:rounded-md file:border-0 file:px-4 file:py-2 file:text-sm file:font-bold file:tracking-wide file:uppercase"
+        />
+        {signatureDataUrl && (
+          // eslint-disable-next-line @next/next/no-img-element -- local data URL preview, not a remote image
+          <img
+            src={signatureDataUrl}
+            alt="Signature preview"
+            className="border-guild-green/30 mt-3 h-20 rounded-md border bg-white object-contain p-2"
+          />
+        )}
+        {signatureError && <p className={errorTextClasses}>{signatureError}</p>}
+      </div>
+    )}
+  </div>
+</div>
 
         {state?.message && (
           <p className="border-red-400/40 bg-red-400/10 rounded-md border px-3 py-2 text-sm text-red-400">

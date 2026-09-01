@@ -21,10 +21,6 @@ type MemberIdCardProps = {
 const CARD_WIDTH = 1344;
 const CARD_HEIGHT = 824;
 
-// Layout-neutral border: `outline` never takes up box space or resizes
-// the element (unlike `border`, which shifted the whole rendered box and
-// threw off every absolutely-positioned overlay when it was added
-// earlier). Same visual gold border effect, none of the side effects.
 const cardOutlineStyle: React.CSSProperties = {
   outline: '6px solid #ffd400',
   outlineOffset: '-6px',
@@ -43,20 +39,47 @@ const valueStyle: React.CSSProperties = {
   textShadow: '0 0 4px rgba(255, 255, 255, 0.82), 0 0 11px rgba(255, 255, 255, 0.28)',
 };
 
+// Converts a black-ink-on-white signature into white ink on a transparent
+// background, so it reads correctly against the card's dark theme.
+//
+// Previously this fetched the remote Vercel Blob image directly into a
+// cross-origin <img crossOrigin="anonymous">, then read its pixels with
+// getImageData(). If the response didn't carry the exact CORS headers the
+// browser expects, that read silently throws a SecurityError ("tainted
+// canvas") — which our catch block absorbed by falling back to the raw,
+// unprocessed image. That fallback is what's been showing as a plain
+// white box with black ink.
+//
+// The fix: fetch() the image ourselves first and convert it to a
+// same-origin blob: URL before ever touching a <canvas>. A same-origin
+// image can never taint a canvas, regardless of what CORS headers the
+// original server did or didn't send — so the conversion now runs
+// reliably instead of silently failing.
 function SignatureImage({ src }: { src: string }) {
-  const [processedSrc, setProcessedSrc] = useState(src);
+  const [processedSrc, setProcessedSrc] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    const image = new Image();
-    image.crossOrigin = 'anonymous';
-    image.onload = () => {
+    let objectUrl: string | null = null;
+
+    async function run() {
       try {
+        const response = await fetch(src);
+        const blob = await response.blob();
+        objectUrl = URL.createObjectURL(blob);
+
+        const image = new Image();
+        image.src = objectUrl;
+        await new Promise<void>((resolve, reject) => {
+          image.onload = () => resolve();
+          image.onerror = () => reject(new Error('Signature image failed to load'));
+        });
+
         const canvas = document.createElement('canvas');
         canvas.width = image.naturalWidth;
         canvas.height = image.naturalHeight;
         const context = canvas.getContext('2d');
-        if (!context) return;
+        if (!context) throw new Error('Canvas context unavailable');
 
         context.drawImage(image, 0, 0);
         const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
@@ -83,19 +106,22 @@ function SignatureImage({ src }: { src: string }) {
 
         context.putImageData(imageData, 0, 0);
         if (!cancelled) setProcessedSrc(canvas.toDataURL('image/png'));
-      } catch {
+      } catch (err) {
+        console.error('Signature processing failed, showing original image:', err);
         if (!cancelled) setProcessedSrc(src);
+      } finally {
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
       }
-    };
-    image.onerror = () => {
-      if (!cancelled) setProcessedSrc(src);
-    };
-    image.src = src;
+    }
+
+    run();
 
     return () => {
       cancelled = true;
     };
   }, [src]);
+
+  if (!processedSrc) return null;
 
   return (
     // eslint-disable-next-line @next/next/no-img-element -- canvas-derived image is needed for PDF parity
@@ -205,11 +231,11 @@ export function MemberIdCard({
           style={{
             position: 'absolute',
             left: 70,
-            top: 510,
+            top: 500,
             width: 350,
             padding: '8px 14px 12px',
             color: '#ffd400',
-            fontSize: 62,
+            fontSize: 76,
             fontFamily: '"Brush Script MT", "Segoe Script", var(--font-yellowtail)',
             fontWeight: 700,
             lineHeight: 1,
@@ -238,10 +264,10 @@ export function MemberIdCard({
           style={{
             position: 'absolute',
             left: 78,
-            top: 591,
+            top: 597,
             maxWidth: 420,
             color: '#ffffff',
-            fontSize: 20,
+            fontSize: 25,
             fontWeight: 800,
             lineHeight: 1.15,
             textTransform: 'uppercase',
@@ -256,9 +282,9 @@ export function MemberIdCard({
           style={{
             position: 'absolute',
             left: 78,
-            top: 616,
+            top: 627,
             color: '#ffffff',
-            fontSize: 12,
+            fontSize: 15,
             fontWeight: 700,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
@@ -278,10 +304,7 @@ export function MemberIdCard({
         <div className={montserrat.className} style={{ ...valueStyle, left: 596, top: 452 }}>
           {dateOfBirth}
         </div>
-        <div
-          className={montserrat.className}
-          style={{ ...valueStyle, left: 996, top: 452, fontSize: 19 }}
-        >
+        <div className={montserrat.className} style={{ ...valueStyle, left: 996, top: 452 }}>
           {dateOfIssue}
         </div>
 
@@ -299,7 +322,7 @@ export function MemberIdCard({
               left: 0,
               width: 260,
               color: '#ffd400',
-              fontSize: 18,
+              fontSize: 23,
               fontWeight: 800,
               lineHeight: 1.4,
               letterSpacing: '0.03em',
@@ -318,7 +341,7 @@ export function MemberIdCard({
               left: 300,
               width: 250,
               color: '#ffffff',
-              fontSize: 17,
+              fontSize: 21,
               fontWeight: 700,
               lineHeight: 1.4,
               whiteSpace: 'nowrap',
