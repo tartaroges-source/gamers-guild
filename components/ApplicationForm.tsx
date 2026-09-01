@@ -39,8 +39,6 @@ const MONTHS = [
 ];
 
 const CURRENT_YEAR = new Date().getFullYear();
-// Newest-first: someone who just turned 13 (the minimum age) appears near
-// the top, since that's close to the age range most applicants fall into.
 const BIRTH_YEARS = Array.from({ length: 88 }, (_, i) => CURRENT_YEAR - 13 - i);
 
 function daysInMonth(month: number, year: number): number {
@@ -65,13 +63,16 @@ export function ApplicationForm() {
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
   const [signatureError, setSignatureError] = useState<string | undefined>(undefined);
   const [signatureMode, setSignatureMode] = useState<'draw' | 'upload'>('draw');
+  const [paymentProofName, setPaymentProofName] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const paymentProofInputRef = useRef<HTMLInputElement>(null);
+  // Same pattern as IdPictureUpload: React auto-resets uncontrolled file
+  // inputs after every submission attempt. Keeping the real File here,
+  // independent of the DOM input, lets us re-attach it afterward.
+  const paymentProofFileRef = useRef<File | null>(null);
 
   const dobError = state?.errors?.dateOfBirth?.[0];
 
-  // After each submission attempt, clear only the field(s) that actually
-  // failed validation — everything else keeps whatever the person typed,
-  // so a single mistake doesn't force them to redo the entire form.
   useEffect(() => {
     if (!state) return;
 
@@ -79,6 +80,8 @@ export function ApplicationForm() {
       setValues(initialValues);
       setPaymentMethod('CASH');
       setSignatureDataUrl(null);
+      setPaymentProofName(null);
+      paymentProofFileRef.current = null;
       return;
     }
 
@@ -100,10 +103,28 @@ export function ApplicationForm() {
     }
   }, [state]);
 
+  // Re-attaches the payment proof file after every submission attempt,
+  // undoing React's automatic reset of that uncontrolled input.
+  useEffect(() => {
+    if (paymentProofFileRef.current && paymentProofInputRef.current) {
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(paymentProofFileRef.current);
+      paymentProofInputRef.current.files = dataTransfer.files;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deliberately only re-runs on state changes
+  }, [state]);
+
   function setField(name: keyof typeof initialValues) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
       setValues((prev) => ({ ...prev, [name]: e.target.value }));
     };
+  }
+
+  function handlePaymentProofChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    paymentProofFileRef.current = file;
+    setPaymentProofName(file.name);
   }
 
   const availableDays = values.birthMonth
@@ -123,9 +144,6 @@ export function ApplicationForm() {
     }
     setSignatureError(undefined);
 
-    // The signature exists only as canvas data in the browser — convert
-    // it to a real File and attach it to the form right before submit,
-    // so the server action can handle it exactly like idPicture/paymentProof.
     const form = e.currentTarget;
     const existingInput = form.elements.namedItem('signature') as HTMLInputElement | null;
     existingInput?.remove();
@@ -186,13 +204,13 @@ export function ApplicationForm() {
               aria-label="Birth month"
               value={values.birthMonth}
               onChange={(e) => {
-  const newMonth = e.target.value;
-  setValues((prev) => {
-    const maxDay = daysInMonth(Number(newMonth), Number(prev.birthYear) || CURRENT_YEAR);
-    const dayStillValid = prev.birthDay && Number(prev.birthDay) <= maxDay;
-    return { ...prev, birthMonth: newMonth, birthDay: dayStillValid ? prev.birthDay : '' };
-  });
-}}
+                const newMonth = e.target.value;
+                setValues((prev) => {
+                  const maxDay = daysInMonth(Number(newMonth), Number(prev.birthYear) || CURRENT_YEAR);
+                  const dayStillValid = prev.birthDay && Number(prev.birthDay) <= maxDay;
+                  return { ...prev, birthMonth: newMonth, birthDay: dayStillValid ? prev.birthDay : '' };
+                });
+              }}
               className={fieldClasses(Boolean(dobError))}
             >
               <option value="" disabled>
@@ -225,15 +243,15 @@ export function ApplicationForm() {
               aria-label="Birth year"
               value={values.birthYear}
               onChange={(e) => {
-  const newYear = e.target.value;
-  setValues((prev) => {
-    const maxDay = prev.birthMonth
-      ? daysInMonth(Number(prev.birthMonth), Number(newYear))
-      : 31;
-    const dayStillValid = prev.birthDay && Number(prev.birthDay) <= maxDay;
-    return { ...prev, birthYear: newYear, birthDay: dayStillValid ? prev.birthDay : '' };
-  });
-}}
+                const newYear = e.target.value;
+                setValues((prev) => {
+                  const maxDay = prev.birthMonth
+                    ? daysInMonth(Number(prev.birthMonth), Number(newYear))
+                    : 31;
+                  const dayStillValid = prev.birthDay && Number(prev.birthDay) <= maxDay;
+                  return { ...prev, birthYear: newYear, birthDay: dayStillValid ? prev.birthDay : '' };
+                });
+              }}
               className={fieldClasses(Boolean(dobError))}
             >
               <option value="" disabled>
@@ -352,7 +370,7 @@ export function ApplicationForm() {
         </div>
 
         <div>
-          <IdPictureUpload />
+          <IdPictureUpload resetSignal={state} />
 
           <div className="mt-5">
             <label className={labelClasses}>Payment Method</label>
@@ -390,9 +408,14 @@ export function ApplicationForm() {
                 name="paymentProof"
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
-                required
+                ref={paymentProofInputRef}
+                onChange={handlePaymentProofChange}
+                required={!paymentProofName}
                 className="mt-1 w-full text-sm text-foreground file:mr-4 file:rounded-md file:border-0 file:bg-guild-green file:px-4 file:py-2 file:text-sm file:font-bold file:tracking-wide file:text-background file:uppercase hover:file:bg-guild-green-dim"
               />
+              {paymentProofName && (
+                <p className="text-guild-green mt-1 text-xs">Selected: {paymentProofName}</p>
+              )}
             </div>
           )}
         </div>
@@ -414,64 +437,64 @@ export function ApplicationForm() {
         </div>
 
         <div>
-  <label className={labelClasses}>Signature</label>
-  <div className="mt-2 flex gap-4 text-sm text-foreground">
-    <label className="flex items-center gap-2">
-      <input
-        type="radio"
-        name="signatureMode"
-        checked={signatureMode === 'draw'}
-        onChange={() => {
-          setSignatureMode('draw');
-          setSignatureDataUrl(null);
-        }}
-      />
-      Draw Signature
-    </label>
-    <label className="flex items-center gap-2">
-      <input
-        type="radio"
-        name="signatureMode"
-        checked={signatureMode === 'upload'}
-        onChange={() => {
-          setSignatureMode('upload');
-          setSignatureDataUrl(null);
-        }}
-      />
-      Upload Signature Image
-    </label>
-  </div>
+          <label className={labelClasses}>Signature</label>
+          <div className="mt-2 flex gap-4 text-sm text-foreground">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="signatureMode"
+                checked={signatureMode === 'draw'}
+                onChange={() => {
+                  setSignatureMode('draw');
+                  setSignatureDataUrl(null);
+                }}
+              />
+              Draw Signature
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="signatureMode"
+                checked={signatureMode === 'upload'}
+                onChange={() => {
+                  setSignatureMode('upload');
+                  setSignatureDataUrl(null);
+                }}
+              />
+              Upload Signature Image
+            </label>
+          </div>
 
-  <div className="mt-2">
-    {signatureMode === 'draw' ? (
-      <SignaturePad onChange={setSignatureDataUrl} error={signatureError} />
-    ) : (
-      <div>
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = () => setSignatureDataUrl(reader.result as string);
-            reader.readAsDataURL(file);
-          }}
-          className="text-foreground file:bg-guild-green file:text-background hover:file:bg-guild-green-dim text-sm file:mr-4 file:rounded-md file:border-0 file:px-4 file:py-2 file:text-sm file:font-bold file:tracking-wide file:uppercase"
-        />
-        {signatureDataUrl && (
-          // eslint-disable-next-line @next/next/no-img-element -- local data URL preview, not a remote image
-          <img
-            src={signatureDataUrl}
-            alt="Signature preview"
-            className="border-guild-green/30 mt-3 h-20 rounded-md border bg-white object-contain p-2"
-          />
-        )}
-        {signatureError && <p className={errorTextClasses}>{signatureError}</p>}
-      </div>
-    )}
-  </div>
-</div>
+          <div className="mt-2">
+            {signatureMode === 'draw' ? (
+              <SignaturePad onChange={setSignatureDataUrl} error={signatureError} />
+            ) : (
+              <div>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => setSignatureDataUrl(reader.result as string);
+                    reader.readAsDataURL(file);
+                  }}
+                  className="text-foreground file:bg-guild-green file:text-background hover:file:bg-guild-green-dim text-sm file:mr-4 file:rounded-md file:border-0 file:px-4 file:py-2 file:text-sm file:font-bold file:tracking-wide file:uppercase"
+                />
+                {signatureDataUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element -- local data URL preview, not a remote image
+                  <img
+                    src={signatureDataUrl}
+                    alt="Signature preview"
+                    className="border-guild-green/30 mt-3 h-20 rounded-md border bg-white object-contain p-2"
+                  />
+                )}
+                {signatureError && <p className={errorTextClasses}>{signatureError}</p>}
+              </div>
+            )}
+          </div>
+        </div>
 
         {state?.message && (
           <p className="border-red-400/40 bg-red-400/10 rounded-md border px-3 py-2 text-sm text-red-400">

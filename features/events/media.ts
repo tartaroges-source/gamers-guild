@@ -17,9 +17,6 @@ async function requireUser() {
   return session.user;
 }
 
-// Called from the client after each file has already been uploaded
-// directly to Vercel Blob — this just records the resulting URLs, so the
-// payload here is tiny regardless of how large the actual video files were.
 export async function attachEventMediaAction(
   eventId: string,
   items: { url: string; type: 'IMAGE' | 'VIDEO' }[]
@@ -48,6 +45,7 @@ export async function attachEventMediaAction(
   revalidatePath(`/events/${eventId}`);
   revalidatePath('/dashboard/events');
   revalidatePath(`/dashboard/events/${eventId}/media`);
+  revalidatePath('/');
 }
 
 export async function deleteEventMediaAction(id: string, url: string, eventId: string) {
@@ -60,6 +58,7 @@ export async function deleteEventMediaAction(id: string, url: string, eventId: s
   revalidatePath('/events');
   revalidatePath(`/events/${eventId}`);
   revalidatePath(`/dashboard/events/${eventId}/media`);
+  revalidatePath('/');
 }
 
 export async function moveEventMediaAction(
@@ -89,6 +88,7 @@ export async function moveEventMediaAction(
 
   revalidatePath(`/events/${eventId}`);
   revalidatePath(`/dashboard/events/${eventId}/media`);
+  revalidatePath('/');
 }
 
 export async function setFeaturedEventAction(id: string) {

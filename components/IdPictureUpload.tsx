@@ -1,11 +1,19 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
 import type { Area, Point } from 'react-easy-crop';
 import { getCroppedImageFile } from '@/lib/cropImage';
 
-export function IdPictureUpload() {
+type IdPictureUploadProps = {
+  // Pass the parent's action `state` here. Any change to it means a
+  // submission attempt just completed — React auto-resets uncontrolled
+  // file inputs right after that, so this effect re-attaches the cropped
+  // file immediately afterward, undoing the wipe.
+  resetSignal?: unknown;
+};
+
+export function IdPictureUpload({ resetSignal }: IdPictureUploadProps) {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -13,6 +21,9 @@ export function IdPictureUpload() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const hiddenInputRef = useRef<HTMLInputElement>(null);
+  // Holds the real cropped File, independent of the DOM input's own
+  // value — this is what survives React's automatic form reset.
+  const croppedFileRef = useRef<File | null>(null);
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -26,19 +37,21 @@ export function IdPictureUpload() {
     setCroppedAreaPixels(areaPixels);
   }, []);
 
+  function attachFileToInput(file: File) {
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    if (hiddenInputRef.current) {
+      hiddenInputRef.current.files = dataTransfer.files;
+    }
+  }
+
   async function handleConfirmCrop() {
     if (!imageSrc || !croppedAreaPixels) return;
     try {
       const croppedFile = await getCroppedImageFile(imageSrc, croppedAreaPixels, 'id-picture.jpg');
 
-      // Push the cropped file into the hidden input's FileList so the
-      // surrounding <form> submits the cropped square image, not the
-      // original uncropped photo.
-      const dataTransfer = new DataTransfer();
-      dataTransfer.items.add(croppedFile);
-      if (hiddenInputRef.current) {
-        hiddenInputRef.current.files = dataTransfer.files;
-      }
+      croppedFileRef.current = croppedFile;
+      attachFileToInput(croppedFile);
 
       setPreviewUrl(URL.createObjectURL(croppedFile));
       setImageSrc(null);
@@ -47,14 +60,21 @@ export function IdPictureUpload() {
     }
   }
 
+  // Runs after every submission attempt (resetSignal changes whenever the
+  // parent's action state updates). Re-attaches the already-cropped file
+  // so a validation error elsewhere in the form doesn't force a re-crop.
+  useEffect(() => {
+    if (croppedFileRef.current) {
+      attachFileToInput(croppedFileRef.current);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deliberately only re-runs on resetSignal changes
+  }, [resetSignal]);
+
   return (
     <div>
       <label className="text-muted text-sm font-medium">2x2 ID Picture</label>
 
-      {/* This is the field that actually submits with the form — its
-          value is set programmatically after cropping, never typed into
-          directly. */}
-      <input type="file" name="idPicture" ref={hiddenInputRef}  className="hidden" />
+      <input type="file" name="idPicture" ref={hiddenInputRef} className="hidden" />
 
       {!imageSrc && !previewUrl && (
         <input
@@ -120,6 +140,7 @@ export function IdPictureUpload() {
             type="button"
             onClick={() => {
               setPreviewUrl(null);
+              croppedFileRef.current = null;
               if (hiddenInputRef.current) hiddenInputRef.current.value = '';
             }}
             className="text-guild-green text-xs hover:underline"
