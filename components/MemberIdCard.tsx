@@ -227,9 +227,7 @@ export function MemberIdCard({
     whiteSpace: 'nowrap',
     overflow: 'visible',
 
-    // Black stroke
-    WebkitTextStroke: '3px #000',
-    paintOrder: 'stroke fill',
+    
 
     // Subtle glow
     textShadow: `
@@ -248,7 +246,7 @@ export function MemberIdCard({
           style={{
             position: 'absolute',
             left: 415,
-            top: 535,
+            top: 505,
             width: 100,
             height: 100,
             objectFit: 'contain',
@@ -262,7 +260,7 @@ export function MemberIdCard({
             top: 597,
             maxWidth: 420,
             color: '#ffffff',
-            fontSize: 25,
+            fontSize: 20,
             fontWeight: 800,
             lineHeight: 1.15,
             textTransform: 'uppercase',
@@ -302,6 +300,22 @@ export function MemberIdCard({
         <div className={montserrat.className} style={{ ...valueStyle, left: 1004, top: 454 }}>
           {dateOfIssue}
         </div>
+        <div
+  className={montserrat.className}
+  style={{
+    position: 'absolute',
+    left: 950,
+    top: 680,
+    fontSize: 18,
+    fontWeight: 600,
+    color: '#b1c2b6',
+    letterSpacing: '0.06em',
+    textTransform: 'uppercase',
+    whiteSpace: 'nowrap',
+  }}
+>
+  Valid since October 7, 2027
+</div>
 
         {signatureUrl && (
           <div
@@ -318,7 +332,7 @@ export function MemberIdCard({
           </div>
         )}
 
-        <div style={{ position: 'absolute', left: 734, top: 756, width: 560, height: 38 }}>
+        <div style={{ position: 'absolute', left: 734, top: 764, width: 560, height: 38 }}>
           <span
             className={montserrat.className}
             style={{
@@ -326,7 +340,7 @@ export function MemberIdCard({
               left: 0,
               width: 260,
               color: '#75cf48',
-              fontSize: 30,
+              fontSize: 18,
               fontWeight: 800,
               lineHeight: 1.4,
               letterSpacing: '0.03em',
@@ -345,7 +359,7 @@ export function MemberIdCard({
               left: 300,
               width: 250,
               color: '#ffffff',
-              fontSize: 30,
+              fontSize: 18,
               fontWeight: 700,
               lineHeight: 1.4,
               whiteSpace: 'nowrap',
