@@ -1,150 +1,65 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import Cropper from 'react-easy-crop';
-import type { Area, Point } from 'react-easy-crop';
-import { getCroppedImageFile } from '@/lib/cropImage';
+import { useState } from 'react';
+import { trimSignatureWhitespace } from '@/lib/trimImage';
 
 type SignatureUploadProps = {
   onChange: (dataUrl: string | null) => void;
   error?: string;
 };
 
-export function SignatureUpload({
-  onChange,
-  error,
-}: SignatureUploadProps) {
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] =
-    useState<Area | null>(null);
+export function SignatureUpload({ onChange, error }: SignatureUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [cropError, setCropError] = useState<string | null>(null);
+  const [processError, setProcessError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-
     if (!file) return;
 
-    setCropError(null);
-    setPreviewUrl(null);
+    setProcessError(null);
+    setIsProcessing(true);
     onChange(null);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setImageSrc(URL.createObjectURL(file));
-  }
-
-  const onCropComplete = useCallback(
-    (_area: Area, areaPixels: Area) => {
-      setCroppedAreaPixels(areaPixels);
-    },
-    []
-  );
-
-  async function handleConfirmCrop() {
-    if (!imageSrc || !croppedAreaPixels) return;
+    setPreviewUrl(null);
 
     try {
-      const croppedFile = await getCroppedImageFile(
-        imageSrc,
-        croppedAreaPixels,
-        'signature.png'
-      );
-
-      const reader = new FileReader();
-
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
-        setPreviewUrl(dataUrl);
-        onChange(dataUrl);
-        setImageSrc(null);
-      };
-
-      reader.readAsDataURL(croppedFile);
+      const dataUrl = await trimSignatureWhitespace(file);
+      setPreviewUrl(dataUrl);
+      onChange(dataUrl);
     } catch {
-      setCropError('Could not crop the image. Please try again.');
+      setProcessError('Could not process that image. Please try a different photo.');
+    } finally {
+      setIsProcessing(false);
     }
   }
 
   return (
     <div>
-      {!imageSrc && !previewUrl && (
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={handleFileSelect}
-          className="text-foreground file:bg-guild-green file:text-background hover:file:bg-guild-green-dim text-sm file:mr-4 file:rounded-md file:border-0 file:px-4 file:py-2 file:text-sm file:font-bold file:tracking-wide file:uppercase"
-        />
-      )}
-
-      {imageSrc && (
-        <div className="mt-2 flex flex-col gap-3">
-          <p className="text-guild-gold text-xs">
-            Zoom and drag so only your signature shows inside the box
-            — crop out any extra background space around it for the
-            clearest result on your ID.
-          </p>
-
-          <div className="border-guild-green/30 bg-background relative h-64 w-full overflow-hidden rounded-md border">
-            <Cropper
-              image={imageSrc}
-              crop={crop}
-              zoom={zoom}
-              rotation={0}
-              aspect={3}
-              cropShape="rect"
-              cropSize={{ width: 600, height: 200 }}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={onCropComplete}
-            />
-          </div>
-
+      {!previewUrl && (
+        <>
           <input
-            type="range"
-            min={1}
-            max={4}
-            step={0.1}
-            value={zoom}
-            onChange={(e) => setZoom(Number(e.target.value))}
-            className="w-full"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleFileSelect}
+            disabled={isProcessing}
+            className="text-foreground file:bg-guild-green file:text-background hover:file:bg-guild-green-dim text-sm file:mr-4 file:rounded-md file:border-0 file:px-4 file:py-2 file:text-sm file:font-bold file:tracking-wide file:uppercase disabled:opacity-50"
           />
-
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={handleConfirmCrop}
-              className="bg-guild-green text-background hover:bg-guild-green-dim rounded-md px-4 py-2 text-sm font-bold"
-            >
-              Confirm Crop
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setImageSrc(null);
-                setZoom(1);
-                setCrop({ x: 0, y: 0 });
-                setCroppedAreaPixels(null);
-              }}
-              className="border-guild-green/30 text-muted hover:bg-surface rounded-md border px-4 py-2 text-sm"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+          <p className="text-muted mt-1 text-xs ">
+            Upload a clear photo of your signature on a plain white background — extra space around it
+            is trimmed automatically.
+          </p>
+          {isProcessing && <p className="text-guild-gold mt-1 text-xs">Processing...</p>}
+        </>
       )}
 
-      {previewUrl && !imageSrc && (
+      {previewUrl && (
         <div className="mt-2 flex items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- local data URL preview, not a remote image */}
           <img
             src={previewUrl}
-            alt="Cropped signature preview"
+            alt="Signature preview"
             className="border-guild-green/30 h-16 rounded-md border bg-white object-contain p-2"
           />
-
           <button
             type="button"
             onClick={() => {
@@ -153,15 +68,13 @@ export function SignatureUpload({
             }}
             className="text-guild-green text-xs hover:underline"
           >
-            Retake / Re-crop
+            Remove / Re-upload
           </button>
         </div>
       )}
 
-      {(cropError || error) && (
-        <p className="mt-1 text-sm text-red-400">
-          {cropError ?? error}
-        </p>
+      {(processError || error) && (
+        <p className="mt-1 text-sm text-red-400">{processError ?? error}</p>
       )}
     </div>
   );

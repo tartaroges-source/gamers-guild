@@ -158,3 +158,9 @@ select:focus-visible,
 .animate-reticle-spin {
   animation: reticle-spin 20s linear infinite;
 }
+
+.reactEasyCrop_Image,
+.reactEasyCrop_Video {
+  max-width: none !important;
+  height: 100% !important;
+}

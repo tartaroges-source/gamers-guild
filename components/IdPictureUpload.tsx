@@ -6,10 +6,6 @@ import type { Area, Point } from 'react-easy-crop';
 import { getCroppedImageFile } from '@/lib/cropImage';
 
 type IdPictureUploadProps = {
-  // Pass the parent's action `state` here. Any change to it means a
-  // submission attempt just completed — React auto-resets uncontrolled
-  // file inputs right after that, so this effect re-attaches the cropped
-  // file immediately afterward, undoing the wipe.
   resetSignal?: unknown;
 };
 
@@ -21,9 +17,8 @@ export function IdPictureUpload({ resetSignal }: IdPictureUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const hiddenInputRef = useRef<HTMLInputElement>(null);
-  // Holds the real cropped File, independent of the DOM input's own
-  // value — this is what survives React's automatic form reset.
   const croppedFileRef = useRef<File | null>(null);
+  const cropContainerRef = useRef<HTMLDivElement>(null);
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -60,15 +55,26 @@ export function IdPictureUpload({ resetSignal }: IdPictureUploadProps) {
     }
   }
 
-  // Runs after every submission attempt (resetSignal changes whenever the
-  // parent's action state updates). Re-attaches the already-cropped file
-  // so a validation error elsewhere in the form doesn't force a re-crop.
   useEffect(() => {
     if (croppedFileRef.current) {
       attachFileToInput(croppedFileRef.current);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- deliberately only re-runs on resetSignal changes
   }, [resetSignal]);
+
+  // react-easy-crop measures its container's size on mount to size the crop
+  // area. When the container mounts inside a conditional block, that
+  // measurement can happen before layout has actually settled, producing a
+  // tiny (e.g. 64x64) crop area regardless of the container's real size.
+  // Dispatching a resize event one tick after mount forces the library to
+  // re-measure against the container's true, final dimensions.
+  useEffect(() => {
+    if (!imageSrc) return;
+    const timer = setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [imageSrc]);
 
   return (
     <div>
@@ -87,7 +93,11 @@ export function IdPictureUpload({ resetSignal }: IdPictureUploadProps) {
 
       {imageSrc && (
         <div className="mt-2 flex flex-col gap-3">
-          <div className="border-guild-green/30 bg-background relative h-64 w-full overflow-hidden rounded-md border">
+          <div
+            ref={cropContainerRef}
+            className="border-guild-green/30 bg-background relative overflow-hidden rounded-md border"
+            style={{ width: '100%', height: 256 }}
+          >
             <Cropper
               image={imageSrc}
               crop={crop}

@@ -321,8 +321,8 @@ export function MemberIdCard({
           <div
             style={{
               position: 'absolute',
-              left: 590,
-              top: 553,
+              left: 550,
+              top: 559,
               width: 270,
               height: 105,
               background: 'transparent',
