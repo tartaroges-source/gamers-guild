@@ -1,4 +1,4 @@
-const CANONICAL_PUBLIC_ORIGIN = 'https://pncgamersguild.vercel.app';
+const CANONICAL_PUBLIC_ORIGIN = 'https://gamersguild-ucpnc.vercel.app';
 
 function originFrom(value: string | undefined) {
   if (!value) return null;
