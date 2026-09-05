@@ -1,11 +1,21 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import QRCode from 'qrcode';
 import { getTeamMembersForDashboard } from '@/features/team/queries';
 import { deleteTeamMemberAction } from '@/features/team/actions';
 import { ConfirmButton } from '@/components/ConfirmButton';
+import { MemberQrCard } from '@/components/MemberQrCard';
+import { getBaseUrl } from '@/lib/url';
 
 export default async function DashboardTeamPage() {
-  const members = await getTeamMembersForDashboard();
+  const [members, baseUrl] = await Promise.all([getTeamMembersForDashboard(), getBaseUrl()]);
+
+  const membersWithQr = await Promise.all(
+    members.map(async (member) => ({
+      ...member,
+      qrDataUrl: await QRCode.toDataURL(`${baseUrl}/verify-officer/${member.id}`, { width: 500 }),
+    }))
+  );
 
   return (
     <main className="p-8">
@@ -21,16 +31,21 @@ export default async function DashboardTeamPage() {
         </Link>
       </div>
 
-      {members.length === 0 ? (
+      {membersWithQr.length === 0 ? (
         <p className="text-muted mt-8">No team members yet.</p>
       ) : (
         <ul className="mt-8 flex flex-col gap-3">
-          {members.map((member) => (
+          {membersWithQr.map((member) => (
             <li
               key={member.id}
               className="border-guild-green/20 bg-surface flex flex-col justify-between gap-3 rounded-lg border p-4 sm:flex-row sm:items-center"
             >
               <div className="flex items-center gap-4">
+                <MemberQrCard
+                  fullName={member.name}
+                  qrDataUrl={member.qrDataUrl}
+                  fileName={`${member.name.replace(/\s+/g, '-')}-officer-qr.png`}
+                />
                 {member.photoUrl ? (
                   <Image
                     src={member.photoUrl}
@@ -60,7 +75,9 @@ export default async function DashboardTeamPage() {
                   Edit
                 </Link>
                 <form action={deleteTeamMemberAction.bind(null, member.id)}>
-                  <ConfirmButton className="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10">Delete</ConfirmButton>
+                  <ConfirmButton className="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10">
+                    Delete
+                  </ConfirmButton>
                 </form>
               </div>
             </li>
