@@ -6,6 +6,7 @@ import { submitApplicationAction } from '@/features/applications/actions';
 import { IdPictureUpload } from '@/components/IdPictureUpload';
 import { CourseSelect } from '@/components/CourseSelect';
 import { SignaturePad } from '@/components/SignaturePad';
+import { SignatureUpload } from '@/components/SignatureUpload';
 
 const baseInputClasses =
   'mt-1 w-full rounded-md border bg-background px-3 py-2 text-foreground focus:ring-1 focus:outline-none';
@@ -469,29 +470,8 @@ export function ApplicationForm() {
             {signatureMode === 'draw' ? (
               <SignaturePad onChange={setSignatureDataUrl} error={signatureError} />
             ) : (
-              <div>
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = () => setSignatureDataUrl(reader.result as string);
-                    reader.readAsDataURL(file);
-                  }}
-                  className="text-foreground file:bg-guild-green file:text-background hover:file:bg-guild-green-dim text-sm file:mr-4 file:rounded-md file:border-0 file:px-4 file:py-2 file:text-sm file:font-bold file:tracking-wide file:uppercase"
-                />
-                {signatureDataUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element -- local data URL preview, not a remote image
-                  <img
-                    src={signatureDataUrl}
-                    alt="Signature preview"
-                    className="border-guild-green/30 mt-3 h-20 rounded-md border bg-white object-contain p-2"
-                  />
-                )}
-                {signatureError && <p className={errorTextClasses}>{signatureError}</p>}
-              </div>
+  <SignatureUpload onChange={setSignatureDataUrl} error={signatureError} />
+
             )}
           </div>
         </div>
