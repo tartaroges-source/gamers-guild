@@ -1,14 +1,37 @@
+import { FaDiscord, FaFacebook, FaInstagram } from 'react-icons/fa';
 import { Reticle } from '@/components/Reticle';
 import { getSiteSettings } from '@/features/settings/queries';
+
+const socialIcons = {
+  Discord: FaDiscord,
+  Facebook: FaFacebook,
+  Instagram: FaInstagram,
+};
+
+function SocialLink({
+  href,
+  label,
+  Icon,
+}: {
+  href: string;
+  label: string;
+  Icon: React.ComponentType<{ className?: string }>;
+}) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="text-muted hover:text-guild-green transition-colors">
+      <Icon className="h-5 w-5" />
+    </a>
+  );
+}
 
 export async function Footer() {
   const settings = await getSiteSettings();
 
   const socialLinks = [
-    { href: settings.discordUrl, label: 'Discord' },
-    { href: settings.facebookUrl, label: 'Facebook' },
-    { href: settings.instagramUrl, label: 'Instagram' },
-  ].filter((link): link is { href: string; label: string } => Boolean(link.href));
+    { href: settings.discordUrl, label: 'Discord' as const },
+    { href: settings.facebookUrl, label: 'Facebook' as const },
+    { href: settings.instagramUrl, label: 'Instagram' as const },
+  ].filter((link): link is { href: string; label: keyof typeof socialIcons } => Boolean(link.href));
 
   return (
     <footer className="border-guild-green/20 bg-surface mt-auto border-t">
@@ -20,25 +43,14 @@ export async function Footer() {
 
         <div className="flex flex-col items-center gap-2 sm:items-end">
           {(socialLinks.length > 0 || settings.contactEmail) && (
-            <div className="flex flex-wrap items-center justify-center gap-4 text-xs sm:justify-end">
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:justify-end">
               {settings.contactEmail && (
-                <a
-                  href={`mailto:${settings.contactEmail}`}
-                  className="text-muted hover:text-guild-green"
-                >
+                <a href={`mailto:${settings.contactEmail}`} className="text-muted hover:text-guild-green text-xs">
                   {settings.contactEmail}
                 </a>
               )}
               {socialLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted hover:text-guild-green"
-                >
-                  {link.label}
-                </a>
+                <SocialLink key={link.label} href={link.href} label={link.label} Icon={socialIcons[link.label]} />
               ))}
             </div>
           )}
