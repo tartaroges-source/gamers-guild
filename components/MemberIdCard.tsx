@@ -314,7 +314,7 @@ export function MemberIdCard({
     whiteSpace: 'nowrap',
   }}
 >
-  Valid since October 7, 2027
+  Valid until October 7, 2027
 </div>
 
         {signatureUrl && (
