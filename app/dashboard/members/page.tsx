@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import QRCode from 'qrcode';
 import { getMembersForDashboard, getDistinctCourses } from '@/features/members/queries';
 import { getBaseUrl } from '@/lib/url';
@@ -12,11 +13,11 @@ export default async function DashboardMembersPage({
   searchParams: Promise<{ search?: string; course?: string; status?: string }>;
 }) {
   const { search, course, status } = await searchParams;
-const [members, baseUrl, courses] = await Promise.all([
-  getMembersForDashboard(search, course, status),
-  getBaseUrl(),
-  getDistinctCourses(),
-]);
+  const [members, baseUrl, courses] = await Promise.all([
+    getMembersForDashboard(search, course, status),
+    getBaseUrl(),
+    getDistinctCourses(),
+  ]);
 
   const membersWithQr = await Promise.all(
     members.map(async (member) => ({
@@ -55,14 +56,14 @@ const [members, baseUrl, courses] = await Promise.all([
           ))}
         </select>
         <select
-  name="status"
-  defaultValue={status ?? ''}
-  className="border-guild-green/30 bg-background text-foreground focus:border-guild-green focus:ring-guild-green rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
->
-  <option value="">All Statuses</option>
-  <option value="ACTIVE">Active</option>
-  <option value="INACTIVE">Inactive</option>
-</select>
+          name="status"
+          defaultValue={status ?? ''}
+          className="border-guild-green/30 bg-background text-foreground focus:border-guild-green focus:ring-guild-green rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+        >
+          <option value="">All Statuses</option>
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
+        </select>
         <button
           type="submit"
           className="bg-guild-green font-display text-background hover:bg-guild-green-dim rounded-md px-4 py-2 text-sm font-bold tracking-wide uppercase"
@@ -80,6 +81,19 @@ const [members, baseUrl, courses] = await Promise.all([
               key={member.id}
               className="border-guild-green/20 bg-surface flex items-center gap-4 rounded-lg border p-4"
             >
+              {member.application?.idPictureUrl ? (
+                <Image
+                  src={member.application.idPictureUrl}
+                  alt={member.fullName}
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 flex-shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <div className="bg-background text-guild-green font-display flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full font-bold">
+                  {member.fullName.charAt(0)}
+                </div>
+              )}
               <MemberQrCard
                 fullName={member.fullName}
                 qrDataUrl={member.qrDataUrl}

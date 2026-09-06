@@ -19,6 +19,7 @@ export async function getMembersForDashboard(search?: string, course?: string, s
       ],
     },
     orderBy: { joinedAt: 'desc' },
+    include: { application: { select: { idPictureUrl: true } } },
   });
 }
 
