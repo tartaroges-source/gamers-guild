@@ -36,24 +36,24 @@ function NodeBox({
 
         ${
           president
-            ? "w-[260px] sm:w-[300px] lg:w-[320px] min-h-[220px] sm:min-h-[250px] lg:min-h-[260px]"
-            : "w-[220px] sm:w-[260px] lg:w-[280px] min-h-[200px] sm:min-h-[220px] lg:min-h-[230px]"
+            ? "w-[320px] sm:w-[360px] lg:w-[380px] min-h-[290px] sm:min-h-[320px] lg:min-h-[340px]"
+            : "w-[270px] sm:w-[310px] lg:w-[330px] min-h-[270px] sm:min-h-[290px] lg:min-h-[310px]"
         }
       `}
     >
       {/* Avatar */}
-      <div className="-mt-10 sm:-mt-12">
+      <div className="-mt-16 sm:-mt-[72px] lg:-mt-20">
         {photoUrl ? (
           <Image
             src={photoUrl}
             alt={name ?? position}
-            width={140}
-            height={140}
+            width={200}
+            height={200}
             priority
-            className="h-24 w-24 sm:h-32 sm:w-32 lg:h-36 lg:w-36 rounded-full border-[5px] border-guild-green bg-background object-cover shadow-xl"
+            className="h-32 w-32 sm:h-40 sm:w-40 lg:h-48 lg:w-48 rounded-full border-[6px] border-guild-green bg-background object-cover object-top shadow-xl"
           />
         ) : (
-          <div className="flex h-24 w-24 sm:h-32 sm:w-32 lg:h-36 lg:w-36 items-center justify-center rounded-full bg-background text-4xl sm:text-5xl font-bold text-guild-green shadow-xl">
+          <div className="flex h-32 w-32 sm:h-40 sm:w-40 lg:h-48 lg:w-48 items-center justify-center rounded-full bg-background text-4xl sm:text-5xl font-bold text-guild-green shadow-xl">
             {name ? name.charAt(0) : "?"}
           </div>
         )}

@@ -43,7 +43,16 @@ export default async function AboutPage() {
     acc[member.committee] = acc[member.committee] ? [...acc[member.committee], member] : [member];
     return acc;
   }, {});
-  const committeeNames = Object.keys(committeeGroups);
+
+  // Advisers always lead the committee list, regardless of when that
+  // group was created relative to the others.
+  const committeeNames = Object.keys(committeeGroups).sort((a, b) => {
+    const aIsAdvisers = /advis/i.test(a);
+    const bIsAdvisers = /advis/i.test(b);
+    if (aIsAdvisers && !bIsAdvisers) return -1;
+    if (!aIsAdvisers && bIsAdvisers) return 1;
+    return 0;
+  });
 
   return (
     <div>
