@@ -18,7 +18,7 @@ type EventMediaManagerProps = {
 };
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
 
 export function EventMediaManager({ eventId, media }: EventMediaManagerProps) {
   const router = useRouter();
@@ -45,7 +45,7 @@ export function EventMediaManager({ eventId, media }: EventMediaManagerProps) {
       const limit = isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
       if (file.size > limit) {
         setMessage(
-          `"${file.name}" is too large (max ${isVideo ? '50MB' : '5MB'} for ${isVideo ? 'videos' : 'images'}).`
+          `"${file.name}" is too large (max ${isVideo ? '200MB' : '5MB'} for ${isVideo ? 'videos' : 'images'}).`
         );
         return;
       }
@@ -142,7 +142,7 @@ export function EventMediaManager({ eventId, media }: EventMediaManagerProps) {
         className="border-guild-green/20 bg-surface mt-6 flex flex-col gap-3 rounded-lg border p-4"
       >
         <label htmlFor="files" className="text-muted text-sm font-medium">
-          Add Images or Videos (multiple allowed, videos max 50MB each)
+          Add Images or Videos (multiple allowed, videos max 200MB each)
         </label>
         <input
           id="files"
