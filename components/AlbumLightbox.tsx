@@ -79,7 +79,7 @@ export function AlbumLightbox({ images }: { images: LightboxImage[] }) {
 
       {openIndex !== null && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-2 sm:p-4"
           onClick={close}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
@@ -87,7 +87,7 @@ export function AlbumLightbox({ images }: { images: LightboxImage[] }) {
           <button
             type="button"
             onClick={close}
-            className="absolute top-4 right-4 z-10 text-3xl text-white/70 hover:text-white"
+            className="absolute top-2 right-2 z-10 rounded-full bg-black/40 p-2 text-2xl leading-none text-white/80 hover:text-white sm:top-4 sm:right-4 sm:bg-transparent sm:text-3xl"
             aria-label="Close"
           >
             &times;
@@ -98,7 +98,7 @@ export function AlbumLightbox({ images }: { images: LightboxImage[] }) {
               e.stopPropagation();
               showPrev();
             }}
-            className="absolute left-4 z-10 text-3xl text-white/70 hover:text-white"
+            className="absolute left-1 z-10 rounded-full bg-black/40 p-2 text-2xl leading-none text-white/80 hover:text-white sm:left-4 sm:bg-transparent sm:text-3xl"
             aria-label="Previous image"
           >
             &#8249;
@@ -109,25 +109,24 @@ export function AlbumLightbox({ images }: { images: LightboxImage[] }) {
               src={images[openIndex].url}
               controls
               autoPlay
-              className="max-h-[85vh] w-auto max-w-[90vw] object-contain"
+              className="max-h-[100dvh] w-auto max-w-full object-contain sm:max-h-[85vh] sm:max-w-[90vw]"
               onClick={(e) => e.stopPropagation()}
             />
           ) : (
-            // FIX: `fill` inside a viewport-sized relative box, instead of a
-            // fixed width={1200} height={1200}. The old fixed square
-            // dimensions forced a 1:1 aspect-ratio box on the underlying
-            // <img>, so any non-square photo got squeezed/letterboxed thin
-            // no matter what the wrapping classes said. `fill` lets the
-            // image size itself to the real box below.
+            // `fill` inside a viewport-sized relative box (instead of a fixed
+            // width/height) so the image scales to fit without a forced
+            // aspect ratio. Sized full-bleed on mobile, boxed on larger
+            // screens. `100dvh` accounts for mobile browser chrome
+            // (address bar) so the image isn't cut off by it.
             <div
-              className="relative h-[85vh] w-[90vw]"
+              className="relative h-[100dvh] w-full sm:h-[85vh] sm:w-[90vw] sm:max-w-5xl"
               onClick={(e) => e.stopPropagation()}
             >
               <Image
                 src={images[openIndex].url}
                 alt={images[openIndex].caption ?? ''}
                 fill
-                sizes="90vw"
+                sizes="(max-width: 640px) 100vw, 90vw"
                 className="object-contain"
                 priority
               />
@@ -140,13 +139,13 @@ export function AlbumLightbox({ images }: { images: LightboxImage[] }) {
               e.stopPropagation();
               showNext();
             }}
-            className="absolute right-4 z-10 text-3xl text-white/70 hover:text-white"
+            className="absolute right-1 z-10 rounded-full bg-black/40 p-2 text-2xl leading-none text-white/80 hover:text-white sm:right-4 sm:bg-transparent sm:text-3xl"
             aria-label="Next image"
           >
             &#8250;
           </button>
 
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-sm text-white">
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-xs text-white sm:bottom-4 sm:text-sm">
             {openIndex + 1} / {images.length}
           </div>
         </div>
