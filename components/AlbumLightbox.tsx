@@ -30,6 +30,16 @@ export function AlbumLightbox({ images }: { images: LightboxImage[] }) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [openIndex, close, showPrev, showNext]);
 
+  // Lock body scroll while the lightbox is open
+  useEffect(() => {
+    if (openIndex === null) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [openIndex]);
+
   function handleTouchStart(e: TouchEvent) {
     touchStartX.current = e.touches[0].clientX;
   }
@@ -49,17 +59,20 @@ export function AlbumLightbox({ images }: { images: LightboxImage[] }) {
             onClick={() => setOpenIndex(i)}
             className="border-guild-green/20 bg-surface overflow-hidden rounded-lg border"
           >
-           {image.type === 'VIDEO' ? (
-  <video src={image.url} className="aspect-square w-full object-cover transition-opacity hover:opacity-80" />
-) : (
-  <Image
-    src={image.url}
-    alt={image.caption ?? ''}
-    width={300}
-    height={300}
-    className="aspect-square w-full object-cover transition-opacity hover:opacity-80"
-  />
-)}
+            {image.type === 'VIDEO' ? (
+              <video
+                src={image.url}
+                className="aspect-square w-full object-cover transition-opacity hover:opacity-80"
+              />
+            ) : (
+              <Image
+                src={image.url}
+                alt={image.caption ?? ''}
+                width={300}
+                height={300}
+                className="aspect-square w-full object-cover transition-opacity hover:opacity-80"
+              />
+            )}
           </button>
         ))}
       </div>
@@ -74,7 +87,7 @@ export function AlbumLightbox({ images }: { images: LightboxImage[] }) {
           <button
             type="button"
             onClick={close}
-            className="absolute top-4 right-4 text-3xl text-white/70 hover:text-white"
+            className="absolute top-4 right-4 z-10 text-3xl text-white/70 hover:text-white"
             aria-label="Close"
           >
             &times;
@@ -85,40 +98,57 @@ export function AlbumLightbox({ images }: { images: LightboxImage[] }) {
               e.stopPropagation();
               showPrev();
             }}
-            className="absolute left-4 text-3xl text-white/70 hover:text-white"
+            className="absolute left-4 z-10 text-3xl text-white/70 hover:text-white"
             aria-label="Previous image"
           >
             &#8249;
           </button>
+
           {images[openIndex].type === 'VIDEO' ? (
-  <video
-    src={images[openIndex].url}
-    controls
-    autoPlay
-    className="max-h-[85vh] w-auto max-w-[90vw] object-contain"
-    onClick={(e) => e.stopPropagation()}
-  />
-) : (
-  <Image
-    src={images[openIndex].url}
-    alt={images[openIndex].caption ?? ''}
-    width={1200}
-    height={1200}
-    className="max-h-[85vh] w-auto max-w-[90vw] object-contain"
-    onClick={(e) => e.stopPropagation()}
-  />
-)}
+            <video
+              src={images[openIndex].url}
+              controls
+              autoPlay
+              className="max-h-[85vh] w-auto max-w-[90vw] object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            // FIX: `fill` inside a viewport-sized relative box, instead of a
+            // fixed width={1200} height={1200}. The old fixed square
+            // dimensions forced a 1:1 aspect-ratio box on the underlying
+            // <img>, so any non-square photo got squeezed/letterboxed thin
+            // no matter what the wrapping classes said. `fill` lets the
+            // image size itself to the real box below.
+            <div
+              className="relative h-[85vh] w-[90vw]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={images[openIndex].url}
+                alt={images[openIndex].caption ?? ''}
+                fill
+                sizes="90vw"
+                className="object-contain"
+                priority
+              />
+            </div>
+          )}
+
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               showNext();
             }}
-            className="absolute right-4 text-3xl text-white/70 hover:text-white"
+            className="absolute right-4 z-10 text-3xl text-white/70 hover:text-white"
             aria-label="Next image"
           >
             &#8250;
           </button>
+
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-sm text-white">
+            {openIndex + 1} / {images.length}
+          </div>
         </div>
       )}
     </>
