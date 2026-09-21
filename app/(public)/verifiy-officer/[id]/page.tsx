@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Image from 'next/image';
 import { getTeamMemberById } from '@/features/team/queries';
 import { Reticle } from '@/components/Reticle';
@@ -7,32 +8,43 @@ export default async function VerifyOfficerPage({ params }: { params: Promise<{ 
   const officer = await getTeamMemberById(id);
 
   return (
-    <div className="mx-auto flex max-w-md flex-col items-center px-4 py-24 text-center sm:px-6">
+    <div className="relative mx-auto flex min-h-[70vh] max-w-md flex-col items-center px-4 py-24 text-center sm:px-6">
       {officer ? (
         <>
-          {officer.photoUrl ? (
-            <Image
-              src={officer.photoUrl}
-              alt={officer.name}
-              width={120}
-              height={120}
-              className="border-guild-gold h-28 w-28 rounded-full border-2 object-cover"
+          <div className="relative flex h-44 w-44 items-center justify-center">
+            <Reticle
+              className="animate-reticle-spin text-guild-gold/[0.07] pointer-events-none absolute h-[420px] w-[420px] sm:h-[560px] sm:w-[560px]"
             />
-          ) : (
-            <Reticle className="text-guild-gold h-16 w-16" />
-          )}
-          <p className="font-mono text-guild-gold mt-4 text-xs tracking-widest uppercase">
+            {officer.photoUrl ? (
+              <Image
+                src={officer.photoUrl}
+                alt={officer.name}
+                width={180}
+                height={180}
+                className="border-guild-gold relative h-44 w-44 rounded-full border-2 object-cover"
+              />
+            ) : (
+              <Reticle className="text-guild-gold relative h-24 w-24" />
+            )}
+          </div>
+          <p className="font-mono text-guild-gold mt-6 text-xs tracking-widest uppercase">
             Verified Officer
           </p>
           <h1 className="font-display text-foreground mt-2 text-2xl font-bold tracking-wide uppercase">
             {officer.name}
           </h1>
+          {officer.ign && <p className="text-guild-green mt-1 text-sm">Codename: {officer.ign}</p>}
           <p className="text-guild-green mt-2 text-lg">{officer.position}</p>
           {officer.committee && <p className="text-muted mt-1 text-sm">{officer.committee}</p>}
         </>
       ) : (
         <>
-          <Reticle className="h-16 w-16 text-red-400" />
+          <div className="relative flex h-16 w-16 items-center justify-center">
+            <Reticle
+              className="text-red-400/[0.07] pointer-events-none absolute h-[420px] w-[420px] sm:h-[560px] sm:w-[560px]"
+            />
+            <Reticle className="relative h-16 w-16 text-red-400" />
+          </div>
           <h1 className="font-display text-foreground mt-6 text-2xl font-bold tracking-wide uppercase">
             Not a Valid Officer
           </h1>
@@ -41,6 +53,13 @@ export default async function VerifyOfficerPage({ params }: { params: Promise<{ 
           </p>
         </>
       )}
+
+      <Link
+        href="/"
+        className="bg-guild-gold font-display text-background mt-10 rounded-md px-6 py-2 text-sm font-bold tracking-wide uppercase transition-opacity hover:opacity-90"
+      >
+        ← Explore the Guild
+      </Link>
     </div>
   );
 }

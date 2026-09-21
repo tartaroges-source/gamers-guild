@@ -9,6 +9,7 @@ type TeamMemberFormProps = {
   defaultValues?: {
     name: string;
     position: string;
+    ign: string;
     committee: string;
     bio: string;
     order: number;
@@ -103,6 +104,20 @@ export function TeamMemberForm({
         {state?.errors?.position && (
           <p className="mt-1 text-sm text-red-400">{state.errors.position[0]}</p>
         )}
+      </div>
+
+      <div>
+        <label htmlFor="ign" className={labelClasses}>
+          IGN (optional)
+        </label>
+        <input
+          id="ign"
+          name="ign"
+          type="text"
+          defaultValue={defaultValues?.ign}
+          className={inputClasses}
+        />
+        {state?.errors?.ign && <p className="mt-1 text-sm text-red-400">{state.errors.ign[0]}</p>}
       </div>
 
       <div>

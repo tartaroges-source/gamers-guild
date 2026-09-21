@@ -290,6 +290,7 @@ model TeamMember {
   id           String  @id @default(cuid())
   name         String
   position     String // e.g. "President", "Events Committee Head"
+  ign          String?
   committee    String? // optional grouping, e.g. "Executive Board"
   photoUrl     String?
   signatureUrl String? // e-signature image, used on generated member ID cards

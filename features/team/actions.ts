@@ -30,6 +30,7 @@ function parseTeamMemberInput(formData: FormData) {
   return teamMemberFormSchema.safeParse({
     name: formData.get('name'),
     position: formData.get('position'),
+    ign: formData.get('ign'),
     committee: formData.get('committee'),
     bio: formData.get('bio'),
     order: formData.get('order'),
@@ -79,6 +80,7 @@ export async function createTeamMemberAction(
     data: {
       name: parsed.data.name,
       position: parsed.data.position,
+      ign: parsed.data.ign || null,
       committee: parsed.data.committee || null,
       bio: parsed.data.bio || null,
       order: parsed.data.order,
@@ -169,6 +171,7 @@ export async function updateTeamMemberAction(
     data: {
       name: parsed.data.name,
       position: parsed.data.position,
+      ign: parsed.data.ign || null,
       committee: parsed.data.committee || null,
       bio: parsed.data.bio || null,
       order: parsed.data.order,
