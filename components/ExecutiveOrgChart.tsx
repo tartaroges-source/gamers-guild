@@ -81,7 +81,7 @@ function NodeBox({
 function Stem() {
   return (
     <div className="flex justify-center">
-      <div className="h-10 w-[3px] rounded-full bg-guild-green/50" />
+      <div className="h-5 sm:h-10 w-[3px] rounded-full bg-guild-green/50" />
     </div>
   );
 }
@@ -90,14 +90,14 @@ function LevelRow({ items }: { items: OrgItem[] }) {
   return (
     <div className="flex w-full flex-col items-center">
       {/* Horizontal Line */}
-      <div className="relative mb-2 h-8 w-full max-w-[900px]">
+      <div className="relative mb-2 h-5 sm:h-8 w-full max-w-[900px]">
         <div className="absolute left-0 right-0 top-0 h-[2px] bg-guild-green/40" />
       </div>
 
-      <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
+      <div className="flex flex-wrap justify-center gap-4 sm:gap-8">
         {items.map((item) => (
           <div key={item.position} className="flex flex-col items-center">
-            <div className="h-8 w-[3px] bg-guild-green/50" />
+            <div className="h-5 sm:h-8 w-[3px] bg-guild-green/50" />
 
             <NodeBox
               position={item.position}
@@ -135,8 +135,8 @@ export function ExecutiveOrgChart({ membersByPosition }: ExecutiveOrgChartProps)
   };
 
   return (
-    <section className="py-20">
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-8 px-4 sm:px-10">
+    <section className="py-10 sm:py-16 lg:py-20">
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-4 sm:gap-8 px-4 sm:px-10">
         {/* President */}
         <NodeBox {...lookup("President")} president />
 
