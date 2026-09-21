@@ -24,6 +24,7 @@ export default async function EditTeamMemberPage({ params }: { params: Promise<{
           defaultValues={{
             name: member.name,
             position: member.position,
+            ign: member.ign ?? '',
             committee: member.committee ?? '',
             bio: member.bio ?? '',
             order: member.order,
