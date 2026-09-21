@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { submitApplicationAction } from '@/features/applications/actions';
 import { IdPictureUpload } from '@/components/IdPictureUpload';
@@ -65,6 +66,7 @@ export function ApplicationForm() {
   const [signatureError, setSignatureError] = useState<string | undefined>(undefined);
   const [signatureMode, setSignatureMode] = useState<'draw' | 'upload'>('draw');
   const [paymentProofName, setPaymentProofName] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const paymentProofInputRef = useRef<HTMLInputElement>(null);
   // Same pattern as IdPictureUpload: React auto-resets uncontrolled file
@@ -73,6 +75,13 @@ export function ApplicationForm() {
   const paymentProofFileRef = useRef<File | null>(null);
 
   const dobError = state?.errors?.dateOfBirth?.[0];
+
+  // Portals need a real DOM node to render into. document.body only
+  // exists in the browser, not during server rendering, so we wait
+  // until after mount before rendering the success overlay through one.
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!state) return;
@@ -470,8 +479,7 @@ export function ApplicationForm() {
             {signatureMode === 'draw' ? (
               <SignaturePad onChange={setSignatureDataUrl} error={signatureError} />
             ) : (
-  <SignatureUpload onChange={setSignatureDataUrl} error={signatureError} />
-
+              <SignatureUpload onChange={setSignatureDataUrl} error={signatureError} />
             )}
           </div>
         </div>
@@ -491,7 +499,7 @@ export function ApplicationForm() {
         </button>
       </form>
 
-      {state?.success && (
+      {mounted && state?.success && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="border-guild-green/30 bg-surface w-full max-w-sm rounded-lg border p-8 text-center">
             <p className="font-display text-guild-green text-lg font-bold tracking-wide uppercase">
@@ -507,7 +515,8 @@ export function ApplicationForm() {
               Return to Home
             </Link>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
