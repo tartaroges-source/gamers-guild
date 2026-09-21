@@ -10,7 +10,7 @@ const errorTextClasses = 'mt-1 text-sm text-red-400';
 const departments: Record<string, string[]> = {
   COE: ['BSCPE', 'BSIE', 'BSECE'],
   CCS: ['BSIT', 'BSCS'],
-  BSBA: ['BSA', 'Marketing', 'Financial Management'],
+  CBAA: ['BSA', 'Marketing', 'Financial Management'],
   COED: [
     'BS Secondary Education - Major in Math',
     'BS Secondary Education - Major in Social Science',
