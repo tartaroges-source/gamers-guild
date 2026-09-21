@@ -135,7 +135,14 @@ export function ExecutiveOrgChart({ membersByPosition }: ExecutiveOrgChartProps)
   };
 
   return (
-    <section className="py-10 sm:py-16 lg:py-20">
+    // FIX: pt is now larger than pb (and larger than the President avatar's
+    // own negative top margin below) at every breakpoint. Previously this
+    // used a single `py-*` value that matched the avatar's `-mt-*` overlap
+    // exactly only at the `lg` breakpoint. On mobile the avatar's -mt-16
+    // (64px) pulled it up further than the old py-10 (40px) top padding
+    // could absorb, so it spilled 24px above this section and covered
+    // whatever heading sits right before it (e.g. "Executive Board").
+    <section className="pt-20 pb-10 sm:pt-24 sm:pb-16 lg:pt-24 lg:pb-20">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-4 sm:gap-8 px-4 sm:px-10">
         {/* President */}
         <NodeBox {...lookup("President")} president />
