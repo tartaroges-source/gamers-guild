@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Image from 'next/image';
 import { getTeamMemberById } from '@/features/team/queries';
 import { Reticle } from '@/components/Reticle';
@@ -51,6 +52,13 @@ export default async function VerifyOfficerPage({ params }: { params: Promise<{ 
           </p>
         </>
       )}
+
+      <Link
+        href="/"
+        className="bg-guild-gold font-display text-background mt-10 rounded-md px-6 py-2 text-sm font-bold tracking-wide uppercase transition-opacity hover:opacity-90"
+      >
+        Back to Home
+      </Link>
     </div>
   );
 }
