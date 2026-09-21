@@ -1,4 +1,10 @@
-import { put } from "@vercel/blob";
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
@@ -11,10 +17,6 @@ export async function validateAndUploadImage(
     return { error: "Please choose an image file." };
   }
 
-  // Never trust client-side restrictions alone — the <input accept="...">
-  // attribute is just a UI hint; a request can always be crafted to skip
-  // it. Re-checking type and size here, on the server, is the real
-  // security boundary.
   if (!ALLOWED_TYPES.includes(file.type)) {
     return { error: "Only JPEG, PNG, WebP, or GIF images are allowed." };
   }
@@ -23,17 +25,30 @@ export async function validateAndUploadImage(
     return { error: "Image must be smaller than 5MB." };
   }
 
-  const blob = await put(`${folder}/${crypto.randomUUID()}-${file.name}`, file, {
-    access: "public",
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder,
+        resource_type: "image",
+        transformation: [{ width: 1000, crop: "limit", quality: "auto", fetch_format: "auto" }],
+      },
+      (error, uploadResult) => {
+        if (error || !uploadResult) {
+          reject(error ?? new Error("Cloudinary image upload failed with no result."));
+          return;
+        }
+        resolve(uploadResult);
+      }
+    );
+    uploadStream.end(buffer);
   });
 
-  return { url: blob.url };
+  return { url: result.secure_url };
 }
 
 const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm"];
-// Kept deliberately tight — a homepage hero video is downloaded by every
-// visitor. A large file quietly burns through Vercel Blob's free-tier
-// bandwidth allowance far faster than image uploads ever would.
 const MAX_VIDEO_SIZE_BYTES = 15 * 1024 * 1024; // 15MB
 
 export async function validateAndUploadVideo(
@@ -54,9 +69,29 @@ export async function validateAndUploadVideo(
     };
   }
 
-  const blob = await put(`${folder}/${crypto.randomUUID()}-${file.name}`, file, {
-    access: "public",
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder,
+        resource_type: "video",
+        // Caps quality/bitrate automatically so short hero clips don't
+        // eat disproportionately into the monthly credit pool — 1 credit
+        // covers 500 seconds of SD video, so keeping quality reasonable
+        // matters more here than for images.
+        transformation: [{ quality: "auto" }],
+      },
+      (error, uploadResult) => {
+        if (error || !uploadResult) {
+          reject(error ?? new Error("Cloudinary video upload failed with no result."));
+          return;
+        }
+        resolve(uploadResult);
+      }
+    );
+    uploadStream.end(buffer);
   });
 
-  return { url: blob.url };
+  return { url: result.secure_url };
 }
