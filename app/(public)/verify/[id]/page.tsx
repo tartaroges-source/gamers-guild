@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Image from 'next/image';
 import { getMemberById } from '@/features/members/queries';
 import { formatEventDate } from '@/lib/format';
@@ -32,6 +33,7 @@ export default async function VerifyMemberPage({ params }: { params: Promise<{ i
             Verified Member
           </h1>
           <p className="text-foreground mt-3 text-lg">{member.fullName}</p>
+          {member.ign && <p className="text-guild-green mt-1 text-sm">IGN: {member.ign}</p>}
           <p className="text-muted mt-1 text-sm">Member since {formatEventDate(member.joinedAt)}</p>
         </>
       ) : (
@@ -50,6 +52,13 @@ export default async function VerifyMemberPage({ params }: { params: Promise<{ i
           </p>
         </>
       )}
+
+      <Link
+        href="/"
+        className="bg-guild-green font-display text-background mt-10 rounded-md px-6 py-2 text-sm font-bold tracking-wide uppercase transition-opacity hover:opacity-90"
+      >
+        Back to Home
+      </Link>
     </div>
   );
 }
