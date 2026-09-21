@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-const DEPARTMENTS = ['COE', 'CCS', 'BSBA', 'COED', 'CHAS'] as const;
+const DEPARTMENTS = ['COE', 'CCS', 'CBAA', 'COED', 'CHAS'] as const;
 
 const COURSES_BY_DEPARTMENT: Record<(typeof DEPARTMENTS)[number], string[]> = {
   COE: ['BSCPE', 'BSIE', 'BSECE'],
   CCS: ['BSIT', 'BSCS'],
-  BSBA: ['BSA', 'Marketing', 'Financial Management'],
+  CBAA: ['BSA', 'Marketing', 'Financial Management'],
   COED: [
     'BS Secondary Education - Major in Math',
     'BS Secondary Education - Major in Social Science',
