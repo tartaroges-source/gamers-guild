@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { upload } from '@vercel/blob/client';
 import {
   attachEventMediaAction,
   deleteEventMediaAction,
@@ -19,6 +18,43 @@ type EventMediaManagerProps = {
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
+
+async function uploadToCloudinary(
+  file: File,
+  isVideo: boolean
+): Promise<{ url: string; type: 'IMAGE' | 'VIDEO' }> {
+  // Step 1: ask our own server for a signed upload authorization.
+  const signRes = await fetch('/api/blob/event-media', { method: 'POST' });
+  if (!signRes.ok) {
+    const body = await signRes.json().catch(() => null);
+    throw new Error(body?.error ?? 'Could not authorize upload.');
+  }
+  const { signature, timestamp, folder, apiKey, cloudName } = await signRes.json();
+
+  // Step 2: upload straight from the browser to Cloudinary, bypassing
+  // our own server — same reason as the homepage video: large files
+  // shouldn't have to pass through our server's request size limits.
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('api_key', apiKey);
+  formData.append('timestamp', String(timestamp));
+  formData.append('signature', signature);
+  formData.append('folder', folder);
+
+  const resourceType = isVideo ? 'video' : 'image';
+  const uploadRes = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
+    { method: 'POST', body: formData }
+  );
+
+  if (!uploadRes.ok) {
+    const body = await uploadRes.json().catch(() => null);
+    throw new Error(body?.error?.message ?? 'Upload failed.');
+  }
+
+  const uploaded = await uploadRes.json();
+  return { url: uploaded.secure_url, type: isVideo ? 'VIDEO' : 'IMAGE' };
+}
 
 export function EventMediaManager({ eventId, media }: EventMediaManagerProps) {
   const router = useRouter();
@@ -38,8 +74,7 @@ export function EventMediaManager({ eventId, media }: EventMediaManagerProps) {
       return;
     }
 
-    // Soft client-side check before spending time uploading — the token
-    // route also enforces a hard 50MB ceiling server-side either way.
+    // Soft client-side check before spending time uploading.
     for (const file of files) {
       const isVideo = file.type.startsWith('video/');
       const limit = isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
@@ -57,11 +92,7 @@ export function EventMediaManager({ eventId, media }: EventMediaManagerProps) {
 
       for (const file of files) {
         const isVideo = file.type.startsWith('video/');
-        const blob = await upload(`events/${Date.now()}-${file.name}`, file, {
-          access: 'public',
-          handleUploadUrl: '/api/blob/event-media',
-        });
-        uploaded.push({ url: blob.url, type: isVideo ? 'VIDEO' : 'IMAGE' });
+        uploaded.push(await uploadToCloudinary(file, isVideo));
       }
 
       const result = await attachEventMediaAction(eventId, uploaded);
