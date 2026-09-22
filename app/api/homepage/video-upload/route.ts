@@ -1,40 +1,37 @@
-import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { NextResponse } from 'next/server';
+import { v2 as cloudinary } from 'cloudinary';
 import { auth } from '@/lib/auth';
 
-const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm'];
-const MAX_VIDEO_SIZE_BYTES = 100 * 1024 * 1024; // 100MB — change this to adjust the cap
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-export async function POST(request: Request): Promise<NextResponse> {
-  const body = (await request.json()) as HandleUploadBody;
-
-  try {
-    const jsonResponse = await handleUpload({
-      body,
-      request,
-      onBeforeGenerateToken: async () => {
-        const session = await auth();
-        if (!session?.user) {
-          throw new Error('You must be signed in to upload.');
-        }
-
-        return {
-          allowedContentTypes: ALLOWED_VIDEO_TYPES,
-          maximumSizeInBytes: MAX_VIDEO_SIZE_BYTES,
-          addRandomSuffix: true,
-        };
-      },
-      onUploadCompleted: async () => {
-        // No DB write here — the form's own server action saves the
-        // resulting URL when the rest of the form is submitted.
-      },
-    });
-
-    return NextResponse.json(jsonResponse);
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Upload failed' },
-      { status: 400 }
-    );
+export async function POST(): Promise<NextResponse> {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: 'You must be signed in to upload.' }, { status: 401 });
   }
+
+  const timestamp = Math.round(Date.now() / 1000);
+  const folder = 'homepage';
+
+  // Cloudinary requires every signed upload to be authorized by a
+  // signature computed here, on the server, from the exact parameters
+  // that will be sent with the upload. This proves the request was
+  // approved by us — the browser never sees the API secret itself,
+  // only this one-time signature tied to this specific upload attempt.
+  const signature = cloudinary.utils.api_sign_request(
+    { timestamp, folder },
+    process.env.CLOUDINARY_API_SECRET!
+  );
+
+  return NextResponse.json({
+    signature,
+    timestamp,
+    folder,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+  });
 }

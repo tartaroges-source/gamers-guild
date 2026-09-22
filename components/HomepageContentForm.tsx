@@ -1,12 +1,14 @@
 'use client';
 
 import { useActionState, useState, type ChangeEvent } from 'react';
-import { upload } from '@vercel/blob/client';
 import { updateHomepageContentAction } from '@/features/homepage/actions';
 
 const inputClasses =
   'mt-1 w-full rounded-md border border-guild-green/30 bg-background px-3 py-2 text-foreground focus:border-guild-green focus:ring-1 focus:ring-guild-green focus:outline-none';
 const labelClasses = 'text-sm font-medium text-muted';
+
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm'];
+const MAX_VIDEO_SIZE_BYTES = 100 * 1024 * 1024; // 100MB
 
 type HomepageContentFormProps = {
   defaultValues: {
@@ -31,15 +33,56 @@ export function HomepageContentForm({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
+      setVideoStatus('error');
+      setVideoError('Only MP4 or WebM videos are allowed.');
+      e.target.value = '';
+      return;
+    }
+
+    if (file.size > MAX_VIDEO_SIZE_BYTES) {
+      setVideoStatus('error');
+      setVideoError('Video must be smaller than 100MB.');
+      e.target.value = '';
+      return;
+    }
+
     setVideoStatus('uploading');
     setVideoError('');
 
     try {
-      const blob = await upload(file.name, file, {
-        access: 'public',
-        handleUploadUrl: '/api/homepage/video-upload',
-      });
-      setVideoUrl(blob.url);
+      // Step 1: ask our own server for a signed upload authorization.
+      // This is the server-side half of File 1's route.
+      const signRes = await fetch('/api/homepage/video-upload', { method: 'POST' });
+      if (!signRes.ok) {
+        const body = await signRes.json().catch(() => null);
+        throw new Error(body?.error ?? 'Could not authorize upload.');
+      }
+      const { signature, timestamp, folder, apiKey, cloudName } = await signRes.json();
+
+      // Step 2: upload the actual file straight from the browser to
+      // Cloudinary, bypassing our own server entirely — same reason as
+      // before, large video files shouldn't have to pass through our
+      // server's request size limits.
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('api_key', apiKey);
+      formData.append('timestamp', String(timestamp));
+      formData.append('signature', signature);
+      formData.append('folder', folder);
+
+      const uploadRes = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
+        { method: 'POST', body: formData }
+      );
+
+      if (!uploadRes.ok) {
+        const body = await uploadRes.json().catch(() => null);
+        throw new Error(body?.error?.message ?? 'Upload failed.');
+      }
+
+      const uploaded = await uploadRes.json();
+      setVideoUrl(uploaded.secure_url);
       setVideoStatus('idle');
     } catch (err) {
       setVideoStatus('error');
