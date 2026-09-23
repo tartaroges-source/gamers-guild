@@ -30,3 +30,14 @@ export function toDateTimeLocalValue(date: Date | null | undefined): string {
     date.getHours()
   )}:${pad(date.getMinutes())}`;
 }
+
+// <input type="datetime-local"> gives a timezone-less string like
+// "2026-10-07T07:00" — plain wall-clock digits with no indication of
+// which timezone they belong to. Passed straight into `new Date(...)`,
+// Node interprets it using the *server's* timezone (UTC on Vercel), not
+// the organizer's — silently shifting every event time. Appending the
+// fixed Manila UTC+8 offset before parsing makes the intended timezone
+// explicit, so it's stored correctly regardless of where the code runs.
+export function parseManilaDateTime(value: string): Date {
+  return new Date(`${value}:00+08:00`);
+}

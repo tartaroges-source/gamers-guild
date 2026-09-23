@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { eventFormSchema } from '@/lib/validation/event';
+import { parseManilaDateTime } from '@/lib/format';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
@@ -13,10 +14,6 @@ export type EventActionState =
     }
   | undefined;
 
-// Both ADMIN and OFFICER can manage events per our permission matrix — so
-// this only checks "is anyone logged in," not a specific role. Contrast
-// this with something like deleting officer accounts, which would need a
-// stricter, role-specific check.
 async function requireUser() {
   const session = await auth();
   if (!session?.user) {
@@ -57,15 +54,12 @@ export async function createEventAction(
       title: parsed.data.title,
       description: parsed.data.description,
       location: parsed.data.location || null,
-      startsAt: new Date(parsed.data.startsAt),
-      endsAt: parsed.data.endsAt ? new Date(parsed.data.endsAt) : null,
+      startsAt: parseManilaDateTime(parsed.data.startsAt),
+      endsAt: parsed.data.endsAt ? parseManilaDateTime(parsed.data.endsAt) : null,
       createdById: user.id,
     },
   });
 
-  // Public /events and the dashboard list both cache their data — this
-  // tells Next.js "the underlying data changed, throw away the cached
-  // version of these pages next time they're requested."
   revalidatePath('/events');
   revalidatePath('/dashboard/events');
   redirect('/dashboard/events');
@@ -95,8 +89,8 @@ export async function updateEventAction(
       title: parsed.data.title,
       description: parsed.data.description,
       location: parsed.data.location || null,
-      startsAt: new Date(parsed.data.startsAt),
-      endsAt: parsed.data.endsAt ? new Date(parsed.data.endsAt) : null,
+      startsAt: parseManilaDateTime(parsed.data.startsAt),
+      endsAt: parsed.data.endsAt ? parseManilaDateTime(parsed.data.endsAt) : null,
     },
   });
 
