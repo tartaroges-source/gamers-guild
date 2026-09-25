@@ -75,6 +75,11 @@ export default async function DashboardApplicationsPage() {
                         {application.status}
                       </span>
                     </p>
+                    {application.ign && (
+                      <p className="text-guild-green mt-0.5 text-xs">
+                        Callsign: {application.ign}
+                      </p>
+                    )}
                     <p className="text-muted mt-1 text-sm break-words">
                       {application.email} &middot; {application.studentId} &middot;{' '}
                       {application.department} &middot; {application.course} &middot;{' '}
