@@ -39,6 +39,23 @@ const valueStyle: React.CSSProperties = {
   textShadow: '0 0 4px rgba(255, 255, 255, 0.82), 0 0 11px rgba(255, 255, 255, 0.28)',
 };
 
+// The large signature-style IGN sits in a fixed-width slot next to the
+// guild logo badge. A single fixed font size only looks right for short
+// IGNs — anything longer overflows past its box and collides with the
+// badge. Since this card is captured as a static image (not a live,
+// reflowing page), we can't rely on the browser to shrink-to-fit for us,
+// so instead we step the size down based on character count. Tuned so a
+// ~10-character IGN still gets the full flourish size, and it keeps
+// shrinking gracefully as names get longer.
+function getIgnFontSize(ign: string): number {
+  const length = ign.length;
+  if (length <= 10) return 76;
+  if (length <= 14) return 60;
+  if (length <= 18) return 48;
+  if (length <= 22) return 40;
+  return 32;
+}
+
 function SignatureImage({ src }: { src: string }) {
   const [processedSrc, setProcessedSrc] = useState<string | null>(null);
 
@@ -220,7 +237,7 @@ export function MemberIdCard({
     width: 350,
     padding: '8px 14px 12px',
     color: '#75cf48',
-    fontSize: 76,
+    fontSize: getIgnFontSize(ign),
     fontFamily: '"Brush Script MT", "Segoe Script", var(--font-yellowtail)',
     fontWeight: 700,
     lineHeight: 1,
