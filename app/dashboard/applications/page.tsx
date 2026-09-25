@@ -77,7 +77,7 @@ export default async function DashboardApplicationsPage() {
                     </p>
                     {application.ign && (
                       <p className="text-guild-green mt-0.5 text-xs">
-                        Callsign: {application.ign}
+                        IGN: {application.ign}
                       </p>
                     )}
                     <p className="text-muted mt-1 text-sm break-words">
