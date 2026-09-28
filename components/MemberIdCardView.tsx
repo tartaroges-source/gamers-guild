@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { toPng } from 'html-to-image';
+import { toJpeg } from 'html-to-image';
 import { MemberIdCard } from '@/components/MemberIdCard';
 
 type MemberIdCardViewProps = {
@@ -16,8 +16,6 @@ type MemberIdCardViewProps = {
   signatureUrl: string | null;
   qrDataUrl: string | null;
 };
-
-const CARD_WIDTH_IN = 3.375;
 
 // Real, unscaled pixel size of each card — must match the dimensions used
 // inside MemberIdCard itself.
@@ -84,12 +82,26 @@ function ScaledCard({ children }: { children: React.ReactNode }) {
 }
 
 // Lets the browser breathe (and release memory from the previous capture)
-// between rendering the front and back cards — a bare await Promise
-// wasn't enough; waiting for a real animation frame gives the browser an
-// actual opportunity to run garbage collection before the next heavy
-// capture starts.
+// between rendering the front and back cards — waiting for a real
+// animation frame gives the browser an actual opportunity to run garbage
+// collection before the next heavy capture starts.
 function nextFrame(): Promise<void> {
   return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Triggers a normal browser download for an in-memory data URL by
+// clicking a temporary, invisible link.
+function downloadDataUrl(dataUrl: string, filename: string) {
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 export function MemberIdCardView(props: MemberIdCardViewProps) {
@@ -111,42 +123,28 @@ export function MemberIdCardView(props: MemberIdCardViewProps) {
         waitForCardImages(backRef.current),
       ]);
 
-      const { jsPDF } = await import('jspdf');
+      // pixelRatio 2 is still solidly print-quality (~192 DPI on a CR80
+      // card) at a fraction of the memory cost of 3. JPG has no
+      // transparency, so the card's rounded corners get filled with the
+      // backgroundColor below instead of being see-through. quality 0.95
+      // keeps text and glow effects crisp with far smaller files than PNG.
+      const captureOptions = { pixelRatio: 2, quality: 0.95, backgroundColor: '#ffffff' };
 
-      // pixelRatio was 3, which — combined with html-to-image embedding
-      // every image (including full-resolution template PNGs) as base64
-      // during capture — produced enough memory pressure to crash the
-      // tab. 2x is still solidly print-quality (~192 DPI on a CR80 card)
-      // at a fraction of the memory cost. cacheBust removed too, since
-      // forcing a fresh network fetch + re-encode on every single
-      // download was pure added memory/time cost for no benefit here.
-      const captureOptions = { pixelRatio: 2, backgroundColor: undefined };
+      const baseName = props.fullName.replace(/\s+/g, '-');
 
-      const frontDataUrl = await toPng(frontRef.current, captureOptions);
+      const frontDataUrl = await toJpeg(frontRef.current, captureOptions);
+      downloadDataUrl(frontDataUrl, `${baseName}-guild-id-front.jpg`);
+
       await nextFrame();
-      const backDataUrl = await toPng(backRef.current, captureOptions);
+      // Small pause so the browser treats these as two separate
+      // downloads instead of dropping the second one.
+      await wait(400);
 
-      const frontImg = new Image();
-      frontImg.src = frontDataUrl;
-      await new Promise((resolve) => {
-        frontImg.onload = resolve;
-      });
-      const cardHeightIn = CARD_WIDTH_IN / (frontImg.width / frontImg.height);
-
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'in',
-        format: [CARD_WIDTH_IN, cardHeightIn],
-      });
-
-      pdf.addImage(frontDataUrl, 'PNG', 0, 0, CARD_WIDTH_IN, cardHeightIn);
-      pdf.addPage([CARD_WIDTH_IN, cardHeightIn], 'landscape');
-      pdf.addImage(backDataUrl, 'PNG', 0, 0, CARD_WIDTH_IN, cardHeightIn);
-
-      pdf.save(`${props.fullName.replace(/\s+/g, '-')}-guild-id.pdf`);
+      const backDataUrl = await toJpeg(backRef.current, captureOptions);
+      downloadDataUrl(backDataUrl, `${baseName}-guild-id-back.jpg`);
     } catch (err) {
       console.error('ID card generation failed:', err);
-      setError('Something went wrong generating the PDF. Please try again.');
+      setError('Something went wrong generating the image. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -168,7 +166,7 @@ export function MemberIdCardView(props: MemberIdCardViewProps) {
         disabled={isGenerating}
         className="bg-guild-green font-display text-background hover:bg-guild-green-dim mt-6 w-full rounded-md px-6 py-2.5 text-sm font-bold tracking-wide uppercase transition-colors disabled:opacity-50 sm:w-fit"
       >
-        {isGenerating ? 'Generating PDF...' : 'Download ID Card (PDF)'}
+        {isGenerating ? 'Generating...' : 'Download ID Card (JPG)'}
       </button>
     </div>
   );
