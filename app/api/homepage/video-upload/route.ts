@@ -1,37 +1,28 @@
-import { NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
-import { auth } from '@/lib/auth';
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import { NextResponse } from "next/server";
+import crypto from "crypto";
+import { auth } from "@/lib/auth";
 
 export async function POST(): Promise<NextResponse> {
   const session = await auth();
   if (!session?.user) {
-    return NextResponse.json({ error: 'You must be signed in to upload.' }, { status: 401 });
+    return NextResponse.json({ error: "You must be signed in to upload." }, { status: 401 });
   }
 
-  const timestamp = Math.round(Date.now() / 1000);
-  const folder = 'homepage';
+  const token = crypto.randomUUID();
+  const expire = Math.floor(Date.now() / 1000) + 1800; // valid for 30 minutes
 
-  // Cloudinary requires every signed upload to be authorized by a
-  // signature computed here, on the server, from the exact parameters
-  // that will be sent with the upload. This proves the request was
-  // approved by us — the browser never sees the API secret itself,
-  // only this one-time signature tied to this specific upload attempt.
-  const signature = cloudinary.utils.api_sign_request(
-    { timestamp, folder },
-    process.env.CLOUDINARY_API_SECRET!
-  );
+  // Client-side ImageKit uploads are authorized by this signature, which
+  // only our server can compute (it needs the private key). The browser
+  // never sees the private key itself — only this one-time signature.
+  const signature = crypto
+    .createHmac("sha1", process.env.IMAGEKIT_PRIVATE_KEY!)
+    .update(token + expire)
+    .digest("hex");
 
   return NextResponse.json({
+    token,
+    expire,
     signature,
-    timestamp,
-    folder,
-    apiKey: process.env.CLOUDINARY_API_KEY,
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
   });
 }

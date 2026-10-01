@@ -12,6 +12,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
       },
+         {
+      protocol: 'https',
+      hostname: 'ik.imagekit.io',
+    },
     ],
   },
  experimental: {
@@ -25,5 +29,7 @@ const nextConfig: NextConfig = {
     proxyClientMaxBodySize: '20mb',
   },
 };
+
+
 
 export default nextConfig;

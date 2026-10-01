@@ -1,13 +1,46 @@
-import { v2 as cloudinary } from "cloudinary";
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+
+const IMAGEKIT_UPLOAD_URL = "https://upload.imagekit.io/api/v1/files/upload";
+
+function imagekitAuthHeader(): string {
+  // ImageKit's server-side upload uses HTTP Basic Auth with the private
+  // key as the username and an empty password — this is documented
+  // behavior, not SDK-specific, so it's stable regardless of which
+  // client library version is (or isn't) installed.
+  const token = Buffer.from(`${process.env.IMAGEKIT_PRIVATE_KEY}:`).toString("base64");
+  return `Basic ${token}`;
+}
+
+async function uploadToImageKit(
+  file: File,
+  folder: string,
+  extraTransformParams: string
+): Promise<{ url: string } | { error: string }> {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("fileName", `${crypto.randomUUID()}-${file.name}`);
+  form.append("folder", `/${folder}`);
+  form.append("useUniqueFileName", "false");
+
+  const response = await fetch(IMAGEKIT_UPLOAD_URL, {
+    method: "POST",
+    headers: { Authorization: imagekitAuthHeader() },
+    body: form,
+  });
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    return { error: body?.message ?? "Upload failed." };
+  }
+
+  const result = await response.json();
+  // ImageKit applies transformations by appending a query string to the
+  // delivery URL rather than at upload time — the file stored is
+  // untouched, and the transformation is applied on the fly whenever
+  // that URL is requested.
+  return { url: `${result.url}?tr=${extraTransformParams}` };
+}
 
 export async function validateAndUploadImage(
   file: File,
@@ -25,27 +58,10 @@ export async function validateAndUploadImage(
     return { error: "Image must be smaller than 5MB." };
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-
-  const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder,
-        resource_type: "image",
-        transformation: [{ width: 1000, crop: "limit", quality: "auto", fetch_format: "auto" }],
-      },
-      (error, uploadResult) => {
-        if (error || !uploadResult) {
-          reject(error ?? new Error("Cloudinary image upload failed with no result."));
-          return;
-        }
-        resolve(uploadResult);
-      }
-    );
-    uploadStream.end(buffer);
-  });
-
-  return { url: result.secure_url };
+  // w-1000: cap width at 1000px (larger images shrink, smaller ones are
+  // left alone). q-auto: ImageKit picks the best quality per image
+  // automatically, balancing file size against visible quality.
+  return uploadToImageKit(file, folder, "w-1000,q-auto");
 }
 
 const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm"];
@@ -69,29 +85,5 @@ export async function validateAndUploadVideo(
     };
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-
-  const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder,
-        resource_type: "video",
-        // Caps quality/bitrate automatically so short hero clips don't
-        // eat disproportionately into the monthly credit pool — 1 credit
-        // covers 500 seconds of SD video, so keeping quality reasonable
-        // matters more here than for images.
-        transformation: [{ quality: "auto" }],
-      },
-      (error, uploadResult) => {
-        if (error || !uploadResult) {
-          reject(error ?? new Error("Cloudinary video upload failed with no result."));
-          return;
-        }
-        resolve(uploadResult);
-      }
-    );
-    uploadStream.end(buffer);
-  });
-
-  return { url: result.secure_url };
+  return uploadToImageKit(file, folder, "q-auto");
 }

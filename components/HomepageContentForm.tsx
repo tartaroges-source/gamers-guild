@@ -51,38 +51,42 @@ export function HomepageContentForm({
     setVideoError('');
 
     try {
-      // Step 1: ask our own server for a signed upload authorization.
-      // This is the server-side half of File 1's route.
+      // Step 1: ask our own server for a one-time signed upload
+      // authorization (token, expire, signature). The private key never
+      // leaves the server — only this signature does.
       const signRes = await fetch('/api/homepage/video-upload', { method: 'POST' });
       if (!signRes.ok) {
         const body = await signRes.json().catch(() => null);
         throw new Error(body?.error ?? 'Could not authorize upload.');
       }
-      const { signature, timestamp, folder, apiKey, cloudName } = await signRes.json();
+      const { token, expire, signature, publicKey } = await signRes.json();
 
-      // Step 2: upload the actual file straight from the browser to
-      // Cloudinary, bypassing our own server entirely — same reason as
-      // before, large video files shouldn't have to pass through our
-      // server's request size limits.
+      // Step 2: upload straight from the browser to ImageKit, bypassing
+      // our own server — large video files shouldn't have to pass
+      // through our server's request size limits.
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('api_key', apiKey);
-      formData.append('timestamp', String(timestamp));
+      formData.append('fileName', `${Date.now()}-${file.name}`);
+      formData.append('folder', '/homepage');
+      formData.append('publicKey', publicKey);
       formData.append('signature', signature);
-      formData.append('folder', folder);
+      formData.append('token', token);
+      formData.append('expire', String(expire));
 
-      const uploadRes = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
-        { method: 'POST', body: formData }
-      );
+      const uploadRes = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
       if (!uploadRes.ok) {
         const body = await uploadRes.json().catch(() => null);
-        throw new Error(body?.error?.message ?? 'Upload failed.');
+        throw new Error(body?.message ?? 'Upload failed.');
       }
 
       const uploaded = await uploadRes.json();
-      setVideoUrl(uploaded.secure_url);
+      // q-auto is applied on delivery via the URL, not at upload time —
+      // ImageKit picks the best quality/compression automatically.
+      setVideoUrl(`${uploaded.url}?tr=q-auto`);
       setVideoStatus('idle');
     } catch (err) {
       setVideoStatus('error');

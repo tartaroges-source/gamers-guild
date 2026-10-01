@@ -19,41 +19,46 @@ type EventMediaManagerProps = {
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
 
-async function uploadToCloudinary(
+async function uploadToImageKit(
   file: File,
   isVideo: boolean
 ): Promise<{ url: string; type: 'IMAGE' | 'VIDEO' }> {
-  // Step 1: ask our own server for a signed upload authorization.
+  // Step 1: ask our own server for a one-time signed upload authorization.
   const signRes = await fetch('/api/blob/event-media', { method: 'POST' });
   if (!signRes.ok) {
     const body = await signRes.json().catch(() => null);
     throw new Error(body?.error ?? 'Could not authorize upload.');
   }
-  const { signature, timestamp, folder, apiKey, cloudName } = await signRes.json();
+  const { token, expire, signature, publicKey } = await signRes.json();
 
-  // Step 2: upload straight from the browser to Cloudinary, bypassing
-  // our own server — same reason as the homepage video: large files
-  // shouldn't have to pass through our server's request size limits.
+  // Step 2: upload straight from the browser to ImageKit, bypassing our
+  // own server — large files shouldn't have to pass through our server's
+  // request size limits.
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('api_key', apiKey);
-  formData.append('timestamp', String(timestamp));
+  formData.append('fileName', `${Date.now()}-${file.name}`);
+  formData.append('folder', '/events');
+  formData.append('publicKey', publicKey);
   formData.append('signature', signature);
-  formData.append('folder', folder);
+  formData.append('token', token);
+  formData.append('expire', String(expire));
 
-  const resourceType = isVideo ? 'video' : 'image';
-  const uploadRes = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
-    { method: 'POST', body: formData }
-  );
+  const uploadRes = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+    method: 'POST',
+    body: formData,
+  });
 
   if (!uploadRes.ok) {
     const body = await uploadRes.json().catch(() => null);
-    throw new Error(body?.error?.message ?? 'Upload failed.');
+    throw new Error(body?.message ?? 'Upload failed.');
   }
 
   const uploaded = await uploadRes.json();
-  return { url: uploaded.secure_url, type: isVideo ? 'VIDEO' : 'IMAGE' };
+  // Transformations are applied on delivery via the URL, not at upload
+  // time: w-1000 caps image width, q-auto picks the best quality
+  // automatically for either images or video.
+  const tr = isVideo ? 'q-auto' : 'w-1000,q-auto';
+  return { url: `${uploaded.url}?tr=${tr}`, type: isVideo ? 'VIDEO' : 'IMAGE' };
 }
 
 export function EventMediaManager({ eventId, media }: EventMediaManagerProps) {
@@ -92,7 +97,7 @@ export function EventMediaManager({ eventId, media }: EventMediaManagerProps) {
 
       for (const file of files) {
         const isVideo = file.type.startsWith('video/');
-        uploaded.push(await uploadToCloudinary(file, isVideo));
+        uploaded.push(await uploadToImageKit(file, isVideo));
       }
 
       const result = await attachEventMediaAction(eventId, uploaded);
